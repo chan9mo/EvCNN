@@ -224,7 +224,7 @@ void evaluate_mqap(){
 	}
 	libff::leave_block("Compute V, W, Y");
 
-	const FieldT t = FieldT::zero();//random_element();
+	const FieldT t = FieldT::random_element();
 
 	const FieldT Zt = domain->compute_vanishing_polynomial(t);
 
@@ -234,26 +234,7 @@ void evaluate_mqap(){
 	FieldT ckWk = FieldT::zero();
 	FieldT ckYk = FieldT::zero();
 
-	/*
-	   FieldT omega = libff::get_root_of_unity<FieldT>(4);
-	   for(size_t i=0;i<num_variabels;i++){
-	   FieldT sum = FieldT::zero();
-	   FieldT sum1 = FieldT::zero();
-	   FieldT sum2 = FieldT::zero();
-	   for(size_t j=0; j<V[i].size();j++){
-	   sum += V[i][j] ;
-	   }
-	   omega = libff::get_root_of_unity<FieldT>(2);
-	   for(size_t j=0; j<V[i].size();j++){
-	   sum1 += V[i][j] *(omega^j);
-	   }
-	   omega = libff::get_root_of_unity<FieldT>(4);
-	   for(size_t j=0; j<V[i].size();j++){
-	   sum2 += V[i][j] *(omega^j);
-	   }
-	   cout << "V(0) = "<<sum.as_ulong()<< "\tVt(1) = "<<sum1.as_ulong()<<"\tVt(2) = "<< sum2.as_ulong()<<endl;
-	   }
-	 */
+	// check r1cs
 	FieldT omega = libff::get_root_of_unity<FieldT>(4);
 	//omega = omega^16;
 	for(size_t i=0; i<num_variabels; i++){
@@ -286,9 +267,9 @@ void evaluate_mqap(){
 	vector<FieldT> Bt(domain2->m, FieldT::zero());
 	vector<FieldT> Ct(domain2->m, FieldT::zero());
 	vector<FieldT> Ht;
-	Ht.reserve(domain2->m+1);
+	Ht.reserve(domain2->m);
 	FieldT ti = FieldT::one();
-	for(size_t i=0; i<domain2->m+1;i++){
+	for(size_t i=0; i<domain2->m;i++){
 		Ht.emplace_back(ti);
 		ti*= t;
 	}
@@ -345,37 +326,52 @@ void evaluate_mqap(){
 		resB3 += aB[i] * u[i];
 		resC3 += aC[i] * u[i];
 	}
-	//cout<<"before iFFT = points"<<endl;
-	//print_point(aA);
 
 
-	// aA point -> poly
+	//A, B, C  point -> poly
 	domain2->iFFT(aA);
-	//cout<<"after iFFT = poly"<<endl;
-	//print_Poly(aA);
-
-	FieldT A0 = FieldT::zero();
-	for(size_t i=0;i<domain2->m;i++){
-		A0 += aA[i];	
-	}
-	cout<<"A0 = "<<A0.as_ulong()<<endl;
-
 	domain2->iFFT(aB);
-	//print_Poly(aB);
-
 	domain2->iFFT(aC);
-	//print_Poly(aC);
 
-	vector<FieldT> tempAB(1, FieldT::zero());
-	libfqfft::_polynomial_multiplication(tempAB, aA, aB);
-	vector<FieldT> tempABC(1, FieldT::zero());
-	libfqfft::_polynomial_subtraction(tempABC, tempAB, aC);
-	shared_ptr<libfqfft::evaluation_domain<FieldT> > domain4 = libfqfft::get_evaluation_domain<FieldT>((domain2->m*2));
-	tempABC.resize(domain4->m, FieldT::zero());
-	domain4->FFT(tempABC);
-	cout<<"A*B-C points"<<endl;
-	print_point(tempABC);
+	//A(x) => A(gx) same B, C
+	domain2->cosetFFT(aA, FieldT::multiplicative_generator);
+	domain2->cosetFFT(aB, FieldT::multiplicative_generator);
+	domain2->cosetFFT(aC, FieldT::multiplicative_generator);
 
+	vector<FieldT> tmpH(domain2->m, FieldT::zero());
+	for(size_t i=0;i<domain2->m;i++){
+		tmpH[i] = aA[i] * aB[i] - aC[i];
+	}
+
+	domain2->icosetFFT(aA, FieldT::multiplicative_generator);
+	domain2->icosetFFT(aB, FieldT::multiplicative_generator);
+	domain2->icosetFFT(aC, FieldT::multiplicative_generator);
+
+
+	vector<FieldT> Zpoly(1, FieldT::one());
+	vector<FieldT> xw(2, FieldT::one());
+	for(size_t i=0;i<domain->m;i++){
+		xw[0] = -domain->get_domain_element(i);
+		libfqfft::_polynomial_multiplication(Zpoly, Zpoly, xw);
+	}
+	//Z(gx) points
+	Zpoly.resize(domain2->m, FieldT::zero());
+	domain2->cosetFFT(Zpoly, FieldT::multiplicative_generator);
+
+	//(A*B-C(gx) point) / (Z(gx) point)
+	for(size_t i=0;i<domain2->m;i++){
+		tmpH[i] = tmpH[i] * Zpoly[i].inverse();
+	}
+	domain2->icosetFFT(tmpH, FieldT::multiplicative_generator);
+
+	domain2->icosetFFT(Zpoly, FieldT::multiplicative_generator);
+
+	//h(gx) -> h(x)
+	FieldT resH = FieldT::zero();
+	for(size_t i=0;i<domain2->m;i++){
+		resH += tmpH[i] * Ht[i];
+	}
+	cout<<"cal resH = "<<resH.as_ulong()<<endl;
 
 	FieldT resA2 = FieldT::zero();
 	FieldT resB2 = FieldT::zero();
@@ -390,103 +386,6 @@ void evaluate_mqap(){
 	domain2->cosetFFT(aB, FieldT::multiplicative_generator);
 	domain2->cosetFFT(aC, FieldT::multiplicative_generator);
 
-	cout<<"mult gen = "<<FieldT::multiplicative_generator.as_ulong()<<endl;
-	//cout<<"after cosetFFT = points"<<endl;
-	//print_point(aA);
-	/*
-
-	cout<<"after iFFT = poly"<<endl;
-	domain2->iFFT(aA);
-	print_Poly(aA);
-	domain2->iFFT(aB);
-	print_Poly(aB);
-	domain2->iFFT(aC);
-	print_Poly(aC);
-
-
-	domain2->FFT(aA);
-	domain2->FFT(aB);
-	domain2->FFT(aC);
-	*/
-	vector<FieldT> &H_tmp = aA;
-
-	for(size_t i=0;i<domain2->m;i++){
-		H_tmp[i] = (aA[i] * aB[i]) - aC[i];
-	}
-	domain->divide_by_Z_on_coset(H_tmp);
-
-	domain2->icosetFFT(H_tmp, FieldT::multiplicative_generator);
-	cout << "H poly : ";
-	print_Poly(H_tmp);
-	//cout<<"H0 + 2 = "<<(H_tmp[0]+FieldT(2)).as_ulong()<<endl;
-
-	cout<<"H points"<<endl;
-	domain2->FFT(H_tmp);
-	print_point(H_tmp);
-
-	domain2->iFFT(H_tmp);
-
-	vector<FieldT> Zpoly(1, FieldT::one());
-	vector<FieldT> xw(2, FieldT::one());
-	omega = libff::get_root_of_unity<FieldT>(4);
-	cout<<"omega = "<<omega.as_ulong()<<endl;
-	FieldT mulTemp = FieldT::one();
-	for(size_t i=0;i<domain->m;i++){
-		xw[0] = -mulTemp;
-		libfqfft::_polynomial_multiplication(Zpoly, Zpoly, xw);
-		mulTemp *= omega;
-	}
-	cout<<"Zpoly : ";
-	print_Poly(Zpoly);
-
-
-	vector<FieldT> gcd(1, FieldT::zero());
-	vector<FieldT> uu(1, FieldT::zero());
-	vector<FieldT> vv(1, FieldT::zero());
-	libfqfft::_polynomial_xgcd(tempABC, Zpoly, gcd, uu, vv);
-	cout<<"gcd : ";
-	print_Poly(gcd);
-	cout<<"u : ";
-	print_Poly(uu);
-	cout<<"v : ";
-	print_Poly(vv);
-
-	FieldT Ztt = FieldT::zero();
-	for(size_t i=0;i<domain->m;i++){
-		Ztt += Zpoly[i]*Ht[i];
-	}
-	cout<<"Zt = "<<Ztt.as_ulong()<<endl;
-	Ztt = FieldT::zero();
-	omega = libff::get_root_of_unity<FieldT>(4);
-	for(size_t i=0;i<domain->m;i++){
-		Ztt += Zpoly[i]*(omega^i);
-	}
-	cout<<"Z(w) = "<<Ztt.as_ulong()<<endl;
-
-	vector<FieldT> q, r;
-	libfqfft::_polynomial_division(q, r, tempABC, Zpoly);
-	cout << "A*B-C / Z = ";
-	print_Poly(q);
-
-	cout<<"remain = ";
-	print_Poly(r);
-
-	FieldT H3 = FieldT::zero();
-	for(size_t i=0;i<q.size();i++){
-		H3 += q[i] * Ht[i];
-	}
-
-	cout<<"H3 = "<<H3.as_ulong()<<endl;
-
-
-	cout<<"Z points "<<endl;
-	shared_ptr<libfqfft::evaluation_domain<FieldT> > domain3 = libfqfft::get_evaluation_domain<FieldT>(domain->m+1);
-	domain3->FFT(Zpoly);
-	print_point(Zpoly);
-
-	domain3->iFFT(Zpoly);
-	Zpoly.resize(domain2->m, FieldT::zero());
-
 
 	FieldT resA = FieldT::zero();
 	FieldT resB = FieldT::zero();
@@ -495,10 +394,6 @@ void evaluate_mqap(){
 		resA += At[i] * wires[i];
 		resB += Bt[i] * wires[i];
 		resC += Ct[i] * wires[i];
-	}
-	FieldT resH = FieldT::zero();
-	for(size_t i=0;i<domain2->m;i++){
-		resH += H_tmp[i] * Ht[i];
 	}
 
 	if(((resA * resB) - resC) == (Zt * resH)) cout<< "ok2"<<endl;
@@ -515,7 +410,6 @@ void evaluate_mqap(){
 	cout<<"H = "<<resH.as_ulong()<<endl;
 	cout<<"Z = "<<Zt.as_ulong()<<endl;
 	cout<<"Z^-1 = "<<Zt.inverse().as_ulong()<<endl;
-	cout<<"-Z = "<<(-Zt).as_ulong()<<endl;
 
 }
 
