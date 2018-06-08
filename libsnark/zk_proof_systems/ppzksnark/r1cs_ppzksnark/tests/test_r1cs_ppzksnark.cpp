@@ -159,6 +159,7 @@ void evaluate_mqap(){
 
 	shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(num_constraints);
 	shared_ptr<libfqfft::evaluation_domain<FieldT> > domain2 = libfqfft::get_evaluation_domain<FieldT>(num_z_order*((num_constraints-1)*4+1) + (num_constraints-1) +1);
+	shared_ptr<libfqfft::evaluation_domain<FieldT> > domain4 = libfqfft::get_evaluation_domain<FieldT>(domain2->m*2);
 
 	vector<vector<vector<FieldT>>> mr1csV (num_variabels, vector<vector<FieldT>>(num_constraints, vector<FieldT>(num_z_order+1, FieldT::zero())));
 	vector<vector<vector<FieldT>>> mr1csW (num_variabels, vector<vector<FieldT>>(num_constraints, vector<FieldT>(num_z_order+1, FieldT::zero())));
@@ -333,19 +334,23 @@ void evaluate_mqap(){
 	domain2->iFFT(aB);
 	domain2->iFFT(aC);
 
-	//A(x) => A(gx) same B, C
-	domain2->cosetFFT(aA, FieldT::multiplicative_generator);
-	domain2->cosetFFT(aB, FieldT::multiplicative_generator);
-	domain2->cosetFFT(aC, FieldT::multiplicative_generator);
+	aA.resize(domain4->m, FieldT::zero());
+	aB.resize(domain4->m, FieldT::zero());
+	aC.resize(domain4->m, FieldT::zero());
 
-	vector<FieldT> tmpH(domain2->m, FieldT::zero());
-	for(size_t i=0;i<domain2->m;i++){
+	//A(x) => A(gx) same B, C
+	domain4->cosetFFT(aA, FieldT::multiplicative_generator);
+	domain4->cosetFFT(aB, FieldT::multiplicative_generator);
+	domain4->cosetFFT(aC, FieldT::multiplicative_generator);
+
+	vector<FieldT> tmpH(domain4->m, FieldT::zero());
+	for(size_t i=0;i<domain4->m;i++){
 		tmpH[i] = aA[i] * aB[i] - aC[i];
 	}
 
-	domain2->icosetFFT(aA, FieldT::multiplicative_generator);
-	domain2->icosetFFT(aB, FieldT::multiplicative_generator);
-	domain2->icosetFFT(aC, FieldT::multiplicative_generator);
+	domain4->icosetFFT(aA, FieldT::multiplicative_generator);
+	domain4->icosetFFT(aB, FieldT::multiplicative_generator);
+	domain4->icosetFFT(aC, FieldT::multiplicative_generator);
 
 
 	vector<FieldT> Zpoly(1, FieldT::one());
@@ -355,20 +360,20 @@ void evaluate_mqap(){
 		libfqfft::_polynomial_multiplication(Zpoly, Zpoly, xw);
 	}
 	//Z(gx) points
-	Zpoly.resize(domain2->m, FieldT::zero());
-	domain2->cosetFFT(Zpoly, FieldT::multiplicative_generator);
+	Zpoly.resize(domain4->m, FieldT::zero());
+	domain4->cosetFFT(Zpoly, FieldT::multiplicative_generator);
 
 	//(A*B-C(gx) point) / (Z(gx) point)
-	for(size_t i=0;i<domain2->m;i++){
+	for(size_t i=0;i<domain4->m;i++){
 		tmpH[i] = tmpH[i] * Zpoly[i].inverse();
 	}
-	domain2->icosetFFT(tmpH, FieldT::multiplicative_generator);
+	domain4->icosetFFT(tmpH, FieldT::multiplicative_generator);
 
-	domain2->icosetFFT(Zpoly, FieldT::multiplicative_generator);
+	domain4->icosetFFT(Zpoly, FieldT::multiplicative_generator);
 
 	//h(gx) -> h(x)
 	FieldT resH = FieldT::zero();
-	for(size_t i=0;i<domain2->m;i++){
+	for(size_t i=0;i<domain4->m;i++){
 		resH += tmpH[i] * Ht[i];
 	}
 	cout<<"cal resH = "<<resH.as_ulong()<<endl;
@@ -382,6 +387,9 @@ void evaluate_mqap(){
 		resB2 += aB[i] * Ht[i];
 		resC2 += aC[i] * Ht[i];
 	}
+	aA.resize(domain2->m);
+	aB.resize(domain2->m);
+	aC.resize(domain2->m);
 	domain2->cosetFFT(aA, FieldT::multiplicative_generator);
 	domain2->cosetFFT(aB, FieldT::multiplicative_generator);
 	domain2->cosetFFT(aC, FieldT::multiplicative_generator);
