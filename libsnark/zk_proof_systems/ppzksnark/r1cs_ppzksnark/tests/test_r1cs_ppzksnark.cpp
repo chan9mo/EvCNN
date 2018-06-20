@@ -230,28 +230,21 @@ qap_witness<FieldT> mr1cs_to_qap_witness_map(
 	vector<FieldT> aB(domain2->m, FieldT::zero());
 	vector<FieldT> aC(domain2->m, FieldT::zero());
 
-	/*
-	//V, W, Y poly -> point
-	for(size_t i=0; i<num_variables; i++){
-		V[i].resize(domain2->m, FieldT::zero());
-		domain2->FFT(V[i]);
-		W[i].resize(domain2->m, FieldT::zero());
-		domain2->FFT(W[i]);
-		Y[i].resize(domain2->m, FieldT::zero());
-		domain2->FFT(Y[i]);
-	}
-	*/
-
 	// r1cs poly * wire
 	for(size_t i=0; i<num_variables;i++){
-		for(size_t j=0;j< domain2->m;j++){
+		for(size_t j=0;j< V[i].size();j++){
 			aA[j] += V[i][j] * wires[i];
+		}
+		for(size_t j=0;j< W[i].size();j++){
 			aB[j] += W[i][j] * wires[i];
+		}
+		for(size_t j=0;j< Y[i].size();j++){
 			aC[j] += Y[i][j] * wires[i];
 		}
 	}
-
+	
 	/*
+	//DEBUG Calculate V(t), W(t), Y(t)
 	FieldT resA3 = FieldT::zero();
 	FieldT resB3 = FieldT::zero();
 	FieldT resC3 = FieldT::zero();
@@ -434,7 +427,7 @@ void evaluate_mqap(){
 		wires[i] = libff::Fr<ppT>(i-num_a+1);
 	}
 	for(size_t i=0; i<num_y;i++){
-		cout<<i<<" ";
+		//cout<<i<<" ";
 		for(size_t j=0;j<num_x;j++){
 			for(size_t k=0; k<num_a;k++){
 				if((j+k) == i) 
@@ -447,9 +440,11 @@ void evaluate_mqap(){
 		cout<<endl;
 	}
 
+	cout<<"output = ";
 	for(size_t i=0; i<num_y;i++){
-		//cout <<"y"<<i<<" = "<<wires[i+num_a+num_x].as_ulong()<<endl;
+		cout <<wires[i+num_a+num_x].as_ulong()<<" ";
 	}
+	cout<<endl;
 	
 
 	//V points
