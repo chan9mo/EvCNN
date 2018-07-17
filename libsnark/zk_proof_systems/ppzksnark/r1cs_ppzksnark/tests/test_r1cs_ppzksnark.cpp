@@ -169,7 +169,7 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 	vector<FieldT> Ht;
 	Ht.reserve(domain4->m);
 	FieldT ti = FieldT::one();
-	for(size_t i=0; i<domain2->m;i++){
+	for(size_t i=0; i<domain4->m;i++){
 		Ht.emplace_back(ti);
 		ti*= t;
 	}
@@ -280,9 +280,9 @@ qap_witness<FieldT> mr1cs_to_qap_witness_map(
 		tmpH[i] = aA[i] * aB[i] - aC[i];
 	}
 
-	domain4->icosetFFT(aA, FieldT::multiplicative_generator);
-	domain4->icosetFFT(aB, FieldT::multiplicative_generator);
-	domain4->icosetFFT(aC, FieldT::multiplicative_generator);
+	//domain4->icosetFFT(aA, FieldT::multiplicative_generator);
+	//domain4->icosetFFT(aB, FieldT::multiplicative_generator);
+	//domain4->icosetFFT(aC, FieldT::multiplicative_generator);
 
 	libff::enter_block("claculate Zt point");
 
@@ -324,13 +324,14 @@ qap_witness<FieldT> mr1cs_to_qap_witness_map(
 		resC2 += aC[i] * Ht[i];
 	}
 	*/
+	/*
 	aA.resize(domain2->m);
 	aB.resize(domain2->m);
 	aC.resize(domain2->m);
 	domain2->cosetFFT(aA, FieldT::multiplicative_generator);
 	domain2->cosetFFT(aB, FieldT::multiplicative_generator);
 	domain2->cosetFFT(aC, FieldT::multiplicative_generator);
-
+	*/
 
 	/*
 	   FieldT resA = FieldT::zero();
@@ -372,10 +373,10 @@ qap_witness<FieldT> mr1cs_to_qap_witness_map(
 }
 
 template<typename ppT>
-void evaluate_mqap(){
+void evaluate_mqap(size_t num_a, size_t num_x){
 
-	size_t num_a = 50;
-	size_t num_x = 100;
+	//size_t num_a = 50;
+	//size_t num_x = 100;
 	size_t num_y = num_a+num_x-1;
 	size_t num_variables = num_a+num_x+num_y;
 	size_t num_inputs = num_a+num_x;
@@ -406,7 +407,9 @@ void evaluate_mqap(){
 	const shared_ptr<libfqfft::evaluation_domain<libff::Fr<ppT>> > domain = libfqfft::get_evaluation_domain<libff::Fr<ppT>>(num_constraints);
 	const shared_ptr<libfqfft::evaluation_domain<libff::Fr<ppT>> > domain2 = libfqfft::get_evaluation_domain<libff::Fr<ppT>>(num_z_order*((num_constraints-1)*4+1) + (num_constraints-1) +1);
 	const shared_ptr<libfqfft::evaluation_domain<libff::Fr<ppT>> > domain4 = libfqfft::get_evaluation_domain<libff::Fr<ppT>>(domain2->m*2);
-	cout<<"degree : "<<domain4->m<<endl;
+	cout<<"degree1 : "<<domain->m<<endl;
+	cout<<"degree2 : "<<domain2->m<<endl;
+	cout<<"degree4 : "<<domain4->m<<endl;
 
 	vector<vector<vector<libff::Fr<ppT>>>> mr1csV (num_variables, vector<vector<libff::Fr<ppT>>>(num_constraints, vector<libff::Fr<ppT>>(num_z_order+1, libff::Fr<ppT>::zero())));
 	vector<vector<vector<libff::Fr<ppT>>>> mr1csW (num_variables, vector<vector<libff::Fr<ppT>>>(num_constraints, vector<libff::Fr<ppT>>(num_z_order+1, libff::Fr<ppT>::zero())));
@@ -437,7 +440,7 @@ void evaluate_mqap(){
 				}
 			}
 		}
-		cout<<endl;
+		//cout<<endl;
 	}
 
 	cout<<"output = ";
@@ -471,6 +474,7 @@ void evaluate_mqap(){
 
 	mr1csY[num_variables-1][2][0] = libff::Fr<ppT>::one();
 
+
 	libff::enter_block("Compute V, W, Y");
 	cout<<"===========Calculate V==========="<<endl;
 	vector<vector<libff::Fr<ppT>>> V(num_variables, vector<libff::Fr<ppT>>(1, libff::Fr<ppT>::zero()));
@@ -492,11 +496,10 @@ void evaluate_mqap(){
 	}
 	libff::leave_block("Compute V, W, Y");
 
-	libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
-	qap_instance_evaluation<libff::Fr<ppT>> qap_inst =  mr1cs_to_qap_instance_map_with_evaluation(domain, domain2, domain4, V, W, Y, num_variables, num_inputs, num_constraints, num_z_order, t);
-
-
 	libff::enter_block("Call to r1cs_ppzksnark_generator");
+	libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
+	
+	qap_instance_evaluation<libff::Fr<ppT>> qap_inst =  mr1cs_to_qap_instance_map_with_evaluation(domain, domain2, domain4, V, W, Y, num_variables, num_inputs, num_constraints, num_z_order, t);
 
 	libff::print_indent(); printf("* QAP number of variables: %zu\n", qap_inst.num_variables());
 	libff::print_indent(); printf("* QAP pre degree: %zu\n", num_constraints);
@@ -505,6 +508,7 @@ void evaluate_mqap(){
 
 	libff::enter_block("Compute query densities");
 	size_t non_zero_At = 0, non_zero_Bt = 0, non_zero_Ct = 0, non_zero_Ht = 0;
+	cout<<"non zero C index : ";
 	for (size_t i = 0; i < qap_inst.num_variables()+1; ++i)
 	{   
 		if (!qap_inst.At[i].is_zero())
@@ -517,6 +521,7 @@ void evaluate_mqap(){
 		}   
 		if (!qap_inst.Ct[i].is_zero())
 		{   
+			cout<<i<<" ";
 			++non_zero_Ct;
 		}   
 	}   
@@ -575,6 +580,7 @@ void evaluate_mqap(){
 
 	const size_t g1_exp_count = 2*(non_zero_At - qap_inst.num_inputs() + non_zero_Ct) + non_zero_Bt + non_zero_Ht + Kt.size();
 	const size_t g2_exp_count = non_zero_Bt;
+	cout<<"g1 exp = :"<<g1_exp_count<<endl;
 
 	size_t g1_window = libff::get_exp_window_size<libff::G1<ppT> >(g1_exp_count);
 	size_t g2_window = libff::get_exp_window_size<libff::G2<ppT> >(g2_exp_count);
@@ -912,8 +918,8 @@ void evaluate_mqap(){
 }
 
 template<typename ppT>
-void testPoly(){
-	evaluate_mqap<ppT>();//libff::Fr<ppT>>();
+void testPoly(int num_a, int num_x){
+	evaluate_mqap<ppT>(num_a, num_x);//libff::Fr<ppT>>();
 }
 
 	template<typename ppT>
@@ -930,12 +936,13 @@ void test_r1cs_ppzksnark(size_t num_constraints,
 	libff::print_header("(leave) Test R1CS ppzkSNARK");
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	default_r1cs_ppzksnark_pp::init_public_params();
 	libff::start_profiling();
+	if(argc <2) cout<<"wrong"<<endl;
 
-	testPoly<default_r1cs_ppzksnark_pp>();
+	testPoly<default_r1cs_ppzksnark_pp>(stoi(argv[1]), stoi(argv[2]));
 	//test_r1cs_ppzksnark<default_r1cs_ppzksnark_pp>(10000, 100);
 }
 
