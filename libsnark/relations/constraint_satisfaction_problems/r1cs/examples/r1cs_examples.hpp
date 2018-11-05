@@ -44,6 +44,15 @@ struct r1cs_example {
     {};
 };
 
+template<typename FieldT>
+r1cs_example<FieldT> generate_r1cs_example_with_image_convol(const size_t num_kernel,
+                                                            const size_t num_w, const size_t num_h);
+
+
+template<typename FieldT>
+r1cs_example<FieldT> generate_r1cs_example_with_convol(const size_t num_a,
+                                                            const size_t num_x);
+
 /**
  * Generate a R1CS example such that:
  * - the number of constraints of the R1CS constraint system is num_constraints;
