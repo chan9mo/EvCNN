@@ -75,6 +75,43 @@ template<typename FieldT>
 r1cs_example<FieldT> generate_r1cs_example_with_binary_input(const size_t num_constraints,
                                                              const size_t num_inputs);
 
+
+///////NEW SYSTEM/////
+
+
+template<typename FieldT>
+struct r1cs_convol_example {
+    r1cs_constraint_convol_system<FieldT> constraint_system;
+    r1cs_primary_input<FieldT> primary_input;
+    r1cs_auxiliary_input<FieldT> auxiliary_input;
+
+    r1cs_convol_example<FieldT>() = default;
+    r1cs_convol_example<FieldT>(const r1cs_convol_example<FieldT> &other) = default;
+    r1cs_convol_example<FieldT>(const r1cs_constraint_convol_system<FieldT> &constraint_system,
+                         const r1cs_primary_input<FieldT> &primary_input,
+                         const r1cs_auxiliary_input<FieldT> &auxiliary_input) :
+        constraint_system(constraint_system),
+        primary_input(primary_input),
+        auxiliary_input(auxiliary_input)
+    {};
+    r1cs_convol_example<FieldT>(r1cs_constraint_convol_system<FieldT> &&constraint_system,
+                         r1cs_primary_input<FieldT> &&primary_input,
+                         r1cs_auxiliary_input<FieldT> &&auxiliary_input) :
+        constraint_system(std::move(constraint_system)),
+        primary_input(std::move(primary_input)),
+        auxiliary_input(std::move(auxiliary_input))
+    {};
+};
+
+template<typename FieldT>
+		r1cs_convol_example<FieldT> generate_r1cs_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol);
+
+template<typename FieldT>
+		r1cs_convol_example<FieldT> generate_r1cs_example_with_field_input(r1cs_constraint_system<FieldT> cs, const size_t num_constraints,
+				const size_t num_inputs);
+ template<typename FieldT>
+         r1cs_convol_example<FieldT> generate_r1cs_convol_combi_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol, const size_t num_input2, const size_t num_const);
+
 } // libsnark
 
 #include <libsnark/relations/constraint_satisfaction_problems/r1cs/examples/r1cs_examples.tcc>

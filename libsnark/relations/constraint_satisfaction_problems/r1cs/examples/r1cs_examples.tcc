@@ -222,9 +222,28 @@ namespace libsnark {
 			cs.primary_input_size = num_inputs;
 			cs.auxiliary_input_size = 2 + num_constraints - num_inputs; // TODO: explain this
 
+			/*
+			std::cout<<"cs start"<<std::endl;
+			for(size_t j=0;j<cs.num_variables();j++){
+				for(size_t i=0;i<cs.num_constraints();i++){
+					if(i==0)std::cout<< j<<"\t";
+					std::cout<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<"\t";
+				for(size_t i=0;i<cs.num_constraints();i++){
+					std::cout<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<"\t";
+				for(size_t i=0;i<cs.num_constraints();i++){
+					std::cout<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<std::endl;
+			}
+			*/
+
 			r1cs_variable_assignment<FieldT> full_variable_assignment;
-			FieldT a = FieldT::random_element();
-			FieldT b = FieldT::random_element();
+			FieldT a = FieldT::one();//random_element();
+			FieldT b = FieldT::one();//random_element();
 			full_variable_assignment.push_back(a);
 			full_variable_assignment.push_back(b);
 
@@ -268,6 +287,22 @@ namespace libsnark {
 			C.add_term(cs.num_variables(), 1);
 			cs.add_constraint(r1cs_constraint<FieldT>(A, B, C));
 			full_variable_assignment.push_back(fin.squared());
+
+			for(size_t j=0;j<cs.num_variables();j++){
+				for(size_t i=0;i<cs.num_constraints();i++){
+					if(i==0)std::cout<<full_variable_assignment[j].as_ulong() << "\t"<< j<<"\t";
+					std::cout<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<"\n\t\t";
+				for(size_t i=0;i<cs.num_constraints();i++){
+					std::cout<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<"\n\t\t";
+				for(size_t i=0;i<cs.num_constraints();i++){
+					std::cout<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\t";
+				}
+				std::cout<<std::endl;
+			}
 
 			/* split variable assignment */
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs);
@@ -348,6 +383,225 @@ namespace libsnark {
 			return r1cs_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
 		}
 
+
+		template<typename FieldT>
+		r1cs_convol_example<FieldT> generate_r1cs_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol)
+		{
+			libff::enter_block("Call to generate_r1cs_convol_example");
+
+			assert(num_inputs >= 1);
+
+			r1cs_constraint_convol_system<FieldT> cs;
+			cs.primary_input_size = num_inputs + num_kernels;
+			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
+			cs.convol_size = num_convol;
+			cs.convol_outputs_size = num_inputs + num_kernels - 1;
+
+
+			r1cs_variable_assignment<FieldT> full_variable_assignment;
+
+			
+			std::cout<<"kernels :";
+			for(size_t i=0; i< num_kernels;i++){
+				full_variable_assignment.push_back(kernels[i]);
+				//std::cout<<kernels[i].as_ulong()<<"\t";
+			}
+
+			std::cout<<"\ninputs :";
+			for (size_t i = 0; i < num_inputs; ++i)
+			{
+				full_variable_assignment.push_back(inputs[i]);
+				//std::cout<<inputs[i].as_ulong()<<"\t";
+			}
+
+
+			std::cout<<"\noutputs :";
+			for(size_t i=0; i<num_inputs + num_kernels-1;i++){
+				FieldT y= FieldT::zero();
+				for(size_t k=0; k<num_inputs;k++){
+					for(size_t l=0;l<num_kernels;l++){
+						if((k+l) == i)
+						{
+							//std::cout<<"["<<k<<"]["<<l<<"]";
+							y += inputs[k] * kernels[l];
+						}
+					}
+				}
+				//std::cout<<y.as_ulong()<<"\t";
+				full_variable_assignment.push_back(y);
+			}
+			std::cout<<"\n";
+			
+			cs.add_convol_constraint(num_inputs, num_kernels, cs.convol_outputs_size);
+
+			/* split variable assignment */
+			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
+			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
+
+			/* sanity checks */
+			assert(cs.num_variables() == full_variable_assignment.size());
+			assert(cs.num_variables() >= num_inputs);
+			assert(cs.num_inputs() == num_inputs);
+			assert(cs.num_constraints() == num_constraints);
+			assert(cs.is_satisfied(primary_input, auxiliary_input));
+
+			libff::leave_block("Call to generate_r1cs_convol_example");
+
+			return r1cs_convol_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
+		}
+
+		template<typename FieldT>
+		r1cs_convol_example<FieldT> generate_r1cs_convol_combi_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol, const size_t num_input2, const size_t num_const)
+		{
+			libff::enter_block("Call to generate_r1cs_convol_combi_example");
+
+			assert(num_inputs >= 1);
+
+			r1cs_constraint_convol_system<FieldT> cs;
+			cs.primary_input_size = num_inputs + num_kernels;
+			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
+			cs.convol_size = num_convol;
+			cs.convol_outputs_size = num_inputs + num_kernels - 1;
+
+
+			r1cs_variable_assignment<FieldT> full_variable_assignment;
+
+			
+			std::cout<<"kernels :";
+			for(size_t i=0; i< num_kernels;i++){
+				full_variable_assignment.push_back(kernels[i]);
+				//std::cout<<kernels[i].as_ulong()<<"\t";
+			}
+
+			std::cout<<"\ninputs :";
+			for (size_t i = 0; i < num_inputs; ++i)
+			{
+				full_variable_assignment.push_back(inputs[i]);
+				//std::cout<<inputs[i].as_ulong()<<"\t";
+			}
+
+
+			std::cout<<"\noutputs :";
+			for(size_t i=0; i<num_inputs + num_kernels-1;i++){
+				FieldT y= FieldT::zero();
+				for(size_t k=0; k<num_inputs;k++){
+					for(size_t l=0;l<num_kernels;l++){
+						if((k+l) == i)
+						{
+							//std::cout<<"["<<k<<"]["<<l<<"]";
+							y += inputs[k] * kernels[l];
+						}
+					}
+				}
+				//std::cout<<y.as_ulong()<<"\t";
+				full_variable_assignment.push_back(y);
+			}
+			std::cout<<"\n";
+			
+			cs.add_convol_constraint(num_inputs, num_kernels, cs.convol_outputs_size);
+
+			/* split variable assignment */
+			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
+			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
+
+			r1cs_convol_example<FieldT> example2 = generate_r1cs_example_with_field_input<FieldT>(cs, num_const, num_input2);
+
+			primary_input.insert(primary_input.end(), example2.primary_input.begin(), example2.primary_input.end());
+			auxiliary_input.insert(auxiliary_input.end(), example2.auxiliary_input.begin(), example2.auxiliary_input.end());
+			
+			full_variable_assignment.insert(full_variable_assignment.end(), primary_input.begin(), primary_input.end());
+			full_variable_assignment.insert(full_variable_assignment.end(), auxiliary_input.begin(), auxiliary_input.end());
+
+			
+
+			/* sanity checks */
+			//assert(cs.num_variables() == full_variable_assignment.size());
+			//assert(cs.num_variables() >= num_inputs);
+			//assert(cs.num_inputs() == num_inputs);
+			//assert(cs.num_constraints() == num_constraints);
+			//assert(cs.is_satisfied(primary_input, auxiliary_input));
+
+			libff::leave_block("Call to generate_r1cs_convol_combi_example");
+
+			return r1cs_convol_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
+		}
+
+	template<typename FieldT>
+		r1cs_convol_example<FieldT> generate_r1cs_example_with_field_input(r1cs_constraint_convol_system<FieldT> cs, const size_t num_constraints,
+				const size_t num_inputs)
+		{
+			libff::enter_block("Call to generate_r1cs_example_with_field_input");
+
+			//assert(num_inputs <= num_constraints + 2);
+
+			size_t origin_cs_num_var = cs.num_variables();
+			size_t origin_cs_num_const = cs.num_constraints();
+
+			cs.primary_input_size += num_inputs;
+			cs.auxiliary_input_size += 2 + num_constraints - num_inputs; // TODO: explain this
+
+			r1cs_variable_assignment<FieldT> full_variable_assignment;
+			FieldT a = FieldT::random_element();
+			FieldT b = FieldT::random_element();
+			full_variable_assignment.push_back(a);
+			full_variable_assignment.push_back(b);
+
+			for (size_t i = origin_cs_num_var; i < origin_cs_num_var + num_constraints-1; ++i)
+			{
+				linear_combination<FieldT> A, B, C;
+
+				if (i % 2)
+				{
+					// a * b = c
+					A.add_term(i+1, 1);
+					B.add_term(i+2, 1);
+					C.add_term(i+3, 1);
+					FieldT tmp = a*b;
+					full_variable_assignment.push_back(tmp);
+					a = b; b = tmp;
+				}
+				else
+				{
+					// a + b = c
+					B.add_term(0, 1);
+					A.add_term(i+1, 1);
+					A.add_term(i+2, 1);
+					C.add_term(i+3, 1);
+					FieldT tmp = a+b;
+					full_variable_assignment.push_back(tmp);
+					a = b; b = tmp;
+				}
+
+				cs.add_constraint(r1cs_constraint_convol<FieldT>(A, B, C));
+			}
+
+			linear_combination<FieldT> A, B, C;
+			FieldT fin = FieldT::zero();
+			for (size_t i = 1+origin_cs_num_var; i < cs.num_variables(); ++i)
+			{
+				A.add_term(i, 1);
+				B.add_term(i, 1);
+				fin = fin + full_variable_assignment[i-1];
+			}
+			C.add_term(cs.num_variables(), 1);
+			cs.add_constraint(r1cs_constraint_convol<FieldT>(A, B, C));
+			full_variable_assignment.push_back(fin.squared());
+
+			/* split variable assignment */
+			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs);
+			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs, full_variable_assignment.end());
+
+			/* sanity checks */
+			//assert(cs.num_variables() == full_variable_assignment.size());
+			//assert(cs.num_variables() >= num_inputs);
+			//assert(cs.num_inputs() == num_inputs);
+			//assert(cs.num_constraints() == num_constraints);
+			//assert(cs.is_satisfied(primary_input, auxiliary_input));
+
+			libff::leave_block("Call to generate_r1cs_example_with_field_input");
+
+			return r1cs_convol_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
+		}
 } // libsnark
 
 #endif // R1CS_EXAMPLES_TCC

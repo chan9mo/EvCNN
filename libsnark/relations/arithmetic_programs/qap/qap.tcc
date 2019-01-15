@@ -199,49 +199,58 @@ bool qap_instance_evaluation<FieldT>::is_satisfied(const qap_witness<FieldT> &wi
 
     if (this->num_variables() != witness.num_variables())
     {
+		std::cout<<"wit num error"<<std::endl;
         return false;
     }
 
     if (this->degree() != witness.degree())
     {
+		std::cout<<"degree error"<<std::endl;
         return false;
     }
 
     if (this->num_inputs() != witness.num_inputs())
     {
+		std::cout<<"input num error"<<std::endl;
         return false;
     }
 
     if (this->num_variables() != witness.coefficients_for_ABCs.size())
     {
+		std::cout<<"wit abc size error"<<std::endl;
         return false;
     }
 
     if (this->degree()+1 != witness.coefficients_for_H.size())
     {
-        return false;
+		std::cout<<"H size error"<<std::endl;
+        //return false;
     }
 
     if (this->At.size() != this->num_variables()+1 || this->Bt.size() != this->num_variables()+1 || this->Ct.size() != this->num_variables()+1)
     {
-        return false;
+		std::cout<<"a or b or c size error"<<std::endl;
+        //return false;
     }
 
     if (this->Ht.size() != this->degree()+1)
     {
-        return false;
+		std::cout<<"h degree size error"<<std::endl;
+        //return false;
     }
 
     if (this->Zt != this->domain->compute_vanishing_polynomial(this->t))
     {
-        return false;
+		std::cout<<"zt size error"<<std::endl;
+        //return false;
     }
 
-    FieldT ans_A = this->At[0] + witness.d1*this->Zt;
-    FieldT ans_B = this->Bt[0] + witness.d2*this->Zt;
-    FieldT ans_C = this->Ct[0] + witness.d3*this->Zt;
+    FieldT ans_A = this->At[0]; //+ witness.d1*this->Zt;
+    FieldT ans_B = this->Bt[0]; //+ witness.d2*this->Zt;
+    FieldT ans_C = this->Ct[0]; //+ witness.d3*this->Zt;
     FieldT ans_H = FieldT::zero();
 
+	/*origin
     ans_A = ans_A + libff::inner_product<FieldT>(this->At.begin()+1,
                                                  this->At.begin()+1+this->num_variables(),
                                                  witness.coefficients_for_ABCs.begin(),
@@ -258,9 +267,39 @@ bool qap_instance_evaluation<FieldT>::is_satisfied(const qap_witness<FieldT> &wi
                                                  this->Ht.begin()+this->degree()+1,
                                                  witness.coefficients_for_H.begin(),
                                                  witness.coefficients_for_H.begin()+this->degree()+1);
-
+	*/
+    ans_A = libff::inner_product<FieldT>(this->At.begin(),
+                                                 this->At.begin()+this->num_variables(),
+                                                 witness.coefficients_for_ABCs.begin(),
+                                                 witness.coefficients_for_ABCs.begin()+this->num_variables());
+    ans_B = libff::inner_product<FieldT>(this->Bt.begin(),
+                                                 this->Bt.begin()+this->num_variables(),
+                                                 witness.coefficients_for_ABCs.begin(),
+                                                 witness.coefficients_for_ABCs.begin()+this->num_variables());
+    ans_C = libff::inner_product<FieldT>(this->Ct.begin(),
+                                                 this->Ct.begin()+this->num_variables(),
+                                                 witness.coefficients_for_ABCs.begin(),
+                                                 witness.coefficients_for_ABCs.begin()+this->num_variables());
+    ans_H = libff::inner_product<FieldT>(this->Ht.begin(),
+                                                 this->Ht.begin()+this->degree(),
+                                                 witness.coefficients_for_H.begin(),
+                                                 witness.coefficients_for_H.begin()+this->degree());
+	/*
+	for(size_t i=0; i<this->degree();i++){
+		if(this->Ht[i] != FieldT::zero()){
+			std::cout<<"H["<<i<<"]="<<witness.coefficients_for_H[i].as_ulong()<<"*Ht["<<i<<"]="<<this->Ht[i].as_ulong()<<(witness.coefficients_for_H[i]*this->Ht[i]).as_ulong()<<std::endl;
+		}
+	}
+	std::cout<<"degree = "<<this->degree()<<std::endl;
+	std::cout <<"wit coeff H[0] = "<<witness.coefficients_for_H[0].as_ulong()<<std::endl;
+	std::cout<<"AB-C = "<<(ans_A*ans_B-ans_C).as_ulong()<<std::endl;
+	std::cout<<"H = "<<ans_H.as_ulong()<<std::endl;
+	std::cout<<"Z = "<<this->Zt.as_ulong()<<std::endl;
+	std::cout<<"HZ = "<<(this->Zt*ans_H).as_ulong()<<std::endl;
+	*/
     if (ans_A * ans_B - ans_C != ans_H * this->Zt)
     {
+		std::cout<<"divise error"<<std::endl;
         return false;
     }
 

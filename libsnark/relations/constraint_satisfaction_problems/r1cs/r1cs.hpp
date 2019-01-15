@@ -145,6 +145,127 @@ public:
     void report_linear_constraint_statistics() const;
 };
 
+/************************* NEW R1CS constraint ***********************************/
+
+template<typename FieldT>
+class r1cs_constraint_convol;
+
+template<typename FieldT>
+std::ostream& operator<<(std::ostream &out, const r1cs_constraint_convol<FieldT> &c);
+
+template<typename FieldT>
+std::istream& operator>>(std::istream &in, r1cs_constraint_convol<FieldT> &c);
+
+/**
+ * A R1CS constraint is a formal expression of the form
+ *
+ *                < A , X > * < B , X > = < C , X > ,
+ *
+ * where X = (x_0,x_1,...,x_m) is a vector of formal variables and A,B,C each
+ * consist of 1+m elements in <FieldT>.
+ *
+ * A R1CS constraint is used to construct a R1CS constraint system (see below).
+ */
+template<typename FieldT>
+class r1cs_constraint_convol {
+public:
+
+    linear_combination<FieldT> a, b, c, a2, b2, c2;
+
+    r1cs_constraint_convol() {};
+    r1cs_constraint_convol(const linear_combination<FieldT> &a,
+                    const linear_combination<FieldT> &b,
+                    const linear_combination<FieldT> &c);
+
+    r1cs_constraint_convol(const std::initializer_list<linear_combination<FieldT> > &A,
+                    const std::initializer_list<linear_combination<FieldT> > &B,
+                    const std::initializer_list<linear_combination<FieldT> > &C);
+
+    r1cs_constraint_convol(const linear_combination<FieldT> &a,
+                    const linear_combination<FieldT> &b,
+                    const linear_combination<FieldT> &c,
+                    const linear_combination<FieldT> &a2,
+                    const linear_combination<FieldT> &b2,
+                    const linear_combination<FieldT> &c2);
+
+    r1cs_constraint_convol(const std::initializer_list<linear_combination<FieldT> > &A,
+                    const std::initializer_list<linear_combination<FieldT> > &B,
+                    const std::initializer_list<linear_combination<FieldT> > &C,
+                    const std::initializer_list<linear_combination<FieldT> > &A2,
+                    const std::initializer_list<linear_combination<FieldT> > &B2,
+                    const std::initializer_list<linear_combination<FieldT> > &C2);
+
+    bool operator==(const r1cs_constraint_convol<FieldT> &other) const;
+
+    friend std::ostream& operator<< <FieldT>(std::ostream &out, const r1cs_constraint_convol<FieldT> &c);
+    friend std::istream& operator>> <FieldT>(std::istream &in, r1cs_constraint_convol<FieldT> &c);
+};
+
+/************************* R1CS constraint system ****************************/
+
+template<typename FieldT>
+class r1cs_constraint_convol_system;
+
+template<typename FieldT>
+std::ostream& operator<<(std::ostream &out, const r1cs_constraint_convol_system<FieldT> &cs);
+
+template<typename FieldT>
+std::istream& operator>>(std::istream &in, r1cs_constraint_convol_system<FieldT> &cs);
+
+/**
+ * A system of R1CS constraints looks like
+ *
+ *     { < A_k , X > * < B_k , X > = < C_k , X > }_{k=1}^{n}  .
+ *
+ * In other words, the system is satisfied if and only if there exist a
+ * USCS variable assignment for which each R1CS constraint is satisfied.
+ *
+ * NOTE:
+ * The 0-th variable (i.e., "x_{0}") always represents the constant 1.
+ * Thus, the 0-th variable is not included in num_variables.
+ */
+template<typename FieldT>
+class r1cs_constraint_convol_system {
+public:
+    size_t primary_input_size;
+    size_t auxiliary_input_size;
+    size_t convol_outputs_size;
+    size_t convol_size;
+
+    std::vector<r1cs_constraint_convol<FieldT> > constraints;
+
+    r1cs_constraint_convol_system() : primary_input_size(0), auxiliary_input_size(0),
+    convol_outputs_size(0), convol_size(0) {}
+
+    size_t num_inputs() const;
+    size_t num_variables() const;
+    size_t num_constraints() const;
+    size_t num_convol() const;
+    size_t num_convol_outputs() const;
+
+#ifdef DEBUG
+    std::map<size_t, std::string> constraint_annotations;
+    std::map<size_t, std::string> variable_annotations;
+#endif
+
+    bool is_valid() const;
+    bool is_satisfied(const r1cs_primary_input<FieldT> &primary_input,
+                      const r1cs_auxiliary_input<FieldT> &auxiliary_input) const;
+
+    void add_constraint(const r1cs_constraint_convol<FieldT> &c);
+    void add_constraint(const r1cs_constraint_convol<FieldT> &c, const std::string &annotation);
+    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels, const size_t num_outputs);
+
+    void swap_AB_if_beneficial();
+
+    bool operator==(const r1cs_constraint_convol_system<FieldT> &other) const;
+
+    friend std::ostream& operator<< <FieldT>(std::ostream &out, const r1cs_constraint_convol_system<FieldT> &cs);
+    friend std::istream& operator>> <FieldT>(std::istream &in, r1cs_constraint_convol_system<FieldT> &cs);
+
+    void report_linear_constraint_statistics() const;
+};
+
 
 } // libsnark
 
