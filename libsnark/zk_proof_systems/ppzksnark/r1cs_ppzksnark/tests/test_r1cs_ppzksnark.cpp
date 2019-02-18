@@ -29,10 +29,24 @@ void test_r1cs_ppzksnark(size_t num_a,
     libff::print_header("(enter) Test R1CS ppzkSNARK");
 
 
-    const bool test_serialization = true;
-    r1cs_example<libff::Fr<ppT> > example = generate_r1cs_example_with_convol<libff::Fr<ppT> >(num_a, num_x);
+    const bool test_serialization = false;//true;
+    //r1cs_example<libff::Fr<ppT> > example = generate_r1cs_example_with_convol<libff::Fr<ppT> >(num_a, num_x);
+	std::vector<libff::Fr<ppT>> a;
+    for(size_t i=0;i<num_a;i++){
+        a.push_back(libff::Fr<ppT>(i+1));
+    }
+    std::vector<libff::Fr<ppT>> x;
+    for(size_t i=0;i<num_x;i++){
+        x.push_back(libff::Fr<ppT>(i+1));
+    }
+
+
+	size_t convol =1;
+    r1cs_example<libff::Fr<ppT>> example = generate_r1cs_origin_convol_example<libff::Fr<ppT>>(num_x, x, num_a, a, convol);
+    //r1cs_convol_example<libff::Fr<ppT>> example = generate_r1cs_convol_example<libff::Fr<ppT>>(num_x, x, num_a, a, convol);
+    //r1cs_convol_example<libff::Fr<ppT>> example = generate_r1cs_convol_combi_example<libff::Fr<ppT>>(num_x, x, num_a, a, convol, 5, 10);
     const bool bit = run_r1cs_ppzksnark<ppT>(example, test_serialization);
-    assert(bit);
+    //assert(bit);
 
     libff::print_header("(leave) Test R1CS ppzkSNARK");
 }

@@ -104,12 +104,16 @@ struct r1cs_convol_example {
 };
 
 template<typename FieldT>
+		r1cs_example<FieldT> generate_r1cs_origin_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol);
+
+
+template<typename FieldT>
 		r1cs_convol_example<FieldT> generate_r1cs_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol);
 
 template<typename FieldT>
 		r1cs_convol_example<FieldT> generate_r1cs_example_with_field_input(r1cs_constraint_system<FieldT> cs, const size_t num_constraints,
 				const size_t num_inputs);
- template<typename FieldT>
+template<typename FieldT>
          r1cs_convol_example<FieldT> generate_r1cs_convol_combi_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol, const size_t num_input2, const size_t num_const);
 
 } // libsnark

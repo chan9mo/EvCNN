@@ -39,6 +39,16 @@ GLA::constraint_t GLA::convert(const Constraint& constraint) const {
         convert(rank1_constraint.c()));
 }
 
+GLA::constraint2_t GLA::convert(const Constraint& constraint, bool convol) const {
+    const auto rank1_constraint = dynamic_cast<const Rank1Constraint&>(constraint);
+    return constraint2_t(convert(rank1_constraint.a()),
+        convert(rank1_constraint.b()),
+        convert(rank1_constraint.c()),
+        convert(rank1_constraint.a2()),
+        convert(rank1_constraint.b2()),
+        convert(rank1_constraint.c2()));
+}
+
 GLA::constraint_sys_t GLA::convert(const ConstraintSystem& constraint_sys) const {
     constraint_sys_t retval;
     retval.reserve(constraint_sys.constraintsPtrs_.size());

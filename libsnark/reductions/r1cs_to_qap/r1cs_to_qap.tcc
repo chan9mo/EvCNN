@@ -37,7 +37,8 @@ namespace libsnark {
 	{
 		libff::enter_block("Call to r1cs_to_qap_instance_map");
 
-		const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
+		//const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
+		const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()));
 
 		std::vector<std::map<size_t, FieldT> > A_in_Lagrange_basis(cs.num_variables()+1);
 		std::vector<std::map<size_t, FieldT> > B_in_Lagrange_basis(cs.num_variables()+1);
@@ -53,6 +54,12 @@ namespace libsnark {
 		{
 			A_in_Lagrange_basis[i][cs.num_constraints() + i] = FieldT::one();
 		}
+
+		size_t conv_index_a = 0;
+		size_t conv_index_b = 0;
+		size_t conv_index_c = 0;
+
+		
 		/* process all other constraints */
 		for (size_t i = 0; i < cs.num_constraints(); ++i)
 		{
@@ -72,6 +79,32 @@ namespace libsnark {
 			{
 				C_in_Lagrange_basis[cs.constraints[i].c.terms[j].index][i] +=
 					cs.constraints[i].c.terms[j].coeff;
+			}
+
+			for(size_t j=0;j<cs.constraints[i].a2.terms.size();j++){
+				///TODO change (j+1) to safe value like prime
+				if(j==0) conv_index_a ++;
+				for(size_t k=0;k<cs.num_convol_outputs();k++){
+					A_in_Lagrange_basis[cs.constraints[i].a2.terms[j].index][i] +=
+						(FieldT(j+1)^cs.constraints[i].a2.terms[j].coeff.as_ulong());
+				}
+			}
+			for(size_t j=0;j<cs.constraints[i].b2.terms.size();j++){
+				///TODO change (j+1) to safe value like prime
+				if(j==0) conv_index_b ++;
+				for(size_t k=0;k<cs.num_convol_outputs();k++){
+					B_in_Lagrange_basis[cs.constraints[i].b2.terms[j].index][i] +=
+						(FieldT(j+1)^cs.constraints[i].b2.terms[j].coeff.as_ulong());
+				}
+			}
+
+			for(size_t j=0;j<cs.constraints[i].c2.terms.size();j++){
+				///TODO change (j+1) to safe value like prime
+				if(j==0) conv_index_c ++;
+				for(size_t k=0;k<cs.num_convol_outputs();k++){
+					C_in_Lagrange_basis[cs.constraints[i].c2.terms[j].index][i] +=
+						(FieldT(j+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+				}
 			}
 		}
 		libff::leave_block("Compute polynomials A, B, C in Lagrange basis");
@@ -128,32 +161,35 @@ namespace libsnark {
 			 *     input_i * 0 = 0
 			 * to ensure soundness of input consistency
 			 */
-
+			/*
 			for(size_t j=0;j<cs.num_variables();j++){
+				
 				for(size_t i=0;i<cs.num_constraints();i++){
 					if(i==0) std::cout<<j<<"\t";
 					std::cout<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\t";
 				}
 				std::cout<<std::endl;
+				
 			}
-			std::cout<<"At ";
+			*/
+			//std::cout<<"At ";
 			for (size_t i = 0; i <= cs.num_inputs(); ++i)
 			{
 				At[i] = u[cs.num_constraints() + i];
-				std::cout<<i<<", "<<cs.num_constraints()+i<<"\t";
+				//std::cout<<i<<", "<<cs.num_constraints()+i<<"\t";
 			}
-			std::cout<<std::endl;
+			//std::cout<<std::endl;
 			/* process all other constraints */
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
-				std::cout<<"At ";
+				//std::cout<<"At ";
 				for (size_t j = 0; j < cs.constraints[i].a.terms.size(); ++j)
 				{
 					At[cs.constraints[i].a.terms[j].index] +=
 						u[i]*cs.constraints[i].a.terms[j].coeff;
-					std::cout<<"( "<<i<<", "<<j<<"), const a term index"<<cs.constraints[i].a.terms[j].index<<"\t";
+					//std::cout<<"( "<<i<<", "<<j<<"), const a term index"<<cs.constraints[i].a.terms[j].index<<"\t";
 				}
-				std::cout<<std::endl;
+				//std::cout<<std::endl;
 
 				for (size_t j = 0; j < cs.constraints[i].b.terms.size(); ++j)
 				{
@@ -166,6 +202,59 @@ namespace libsnark {
 					Ct[cs.constraints[i].c.terms[j].index] +=
 						u[i]*cs.constraints[i].c.terms[j].coeff;
 				}
+
+				size_t conv_index_a = 0;
+				size_t conv_index_b = 0;
+				size_t conv_index_c = 0;
+				for(size_t j=0;j<cs.constraints[i].a2.terms.size();j++){
+					///TODO change (j+1) to safe value like prime
+					FieldT temp = FieldT::one();
+					if(j==0) conv_index_a ++;
+					for(size_t k=0;k<cs.num_convol_outputs();k++){
+
+						At[cs.constraints[i].a2.terms[j].index] +=
+							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_a-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						temp *= FieldT(k+1);
+							//u[cs.num_inputs()+1 + (cs.num_constraints()) + (cs.num_convol_outputs())*(conv_index_a-1) + k ] * (FieldT(k+1)^cs.constraints[i].a2.terms[j].coeff.as_ulong());
+						/*
+						std::cout<<"At["<<(cs.constraints[i].a2.terms[j].index)<<
+							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k<<
+							"]*("<<j+1<<")^"<<cs.constraints[i].a2.terms[j].coeff.as_ulong()<<"\n";
+						*/
+					}
+				}
+				for(size_t j=0;j<cs.constraints[i].b2.terms.size();j++){
+					///TODO change (j+1) to safe value like prime
+					FieldT temp = FieldT::one();
+					if(j==0) conv_index_b ++;
+					for(size_t k=0;k<cs.num_convol_outputs();k++){
+						Bt[cs.constraints[i].b2.terms[j].index] +=
+							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_b-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						temp *= FieldT(k+1);
+						/*
+						std::cout<<"Bt["<<(cs.constraints[i].b2.terms[j].index)<<
+							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_b-1)+k<<
+							"]*("<<j+1<<")^"<<cs.constraints[i].b2.terms[j].coeff.as_ulong()<<"\n";
+						*/
+					}
+				}
+
+				for(size_t j=0;j<cs.constraints[i].c2.terms.size();j++){
+					///TODO change (j+1) to safe value like prime
+					FieldT temp = FieldT::one();
+					if(j==0) conv_index_c ++;
+					for(size_t k=0;k<cs.num_convol_outputs();k++){
+						Ct[cs.constraints[i].c2.terms[j].index] +=
+							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_c-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						temp *= FieldT(k+1);
+						/*
+						std::cout<<"Ct["<<(cs.constraints[i].c2.terms[j].index)<<
+							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_c-1)+k<<
+							"]*("<<j+1<<")^"<<cs.constraints[i].c2.terms[j].coeff.as_ulong()<<"\n";
+						*/
+					}
+				}
+				
 			}
 
 			FieldT ti = FieldT::one();
@@ -232,8 +321,9 @@ namespace libsnark {
 			/* sanity check */
 			assert(cs.is_satisfied(primary_input, auxiliary_input));
 
-			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
-
+			//const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
+			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()));
+			
 			r1cs_variable_assignment<FieldT> full_variable_assignment = primary_input;
 			full_variable_assignment.insert(full_variable_assignment.end(), auxiliary_input.begin(), auxiliary_input.end());
 
@@ -251,6 +341,59 @@ namespace libsnark {
 			{
 				aA[i] += cs.constraints[i].a.evaluate(full_variable_assignment);
 				aB[i] += cs.constraints[i].b.evaluate(full_variable_assignment);
+			}
+
+			size_t conv_index = 0;
+			size_t conv_index2 = 0;
+			for( size_t i=0;i<cs.num_constraints();i++){
+				FieldT acc = FieldT::zero();
+				bool flag = false;
+				for(auto &lt : cs.constraints[i].a2){
+					if(!flag){ 
+						conv_index++;
+						flag = true;
+					}
+					FieldT temp = FieldT::one();
+					for(size_t j=1;j<=cs.num_convol_outputs();j++){
+						//if(lt.idex ==0) acc += (FieldT::one()*cs.conv_num_output()) * lt.coeff; //there is no first one in conv constraints
+						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						temp *= FieldT(j);
+						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						aA[(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
+						//std::cout<<"aA["<<(j-1)+(conv_index-1)*cs.num_convol_outputs()+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+					}
+					//if(acc != FieldT::zero()){
+					//}
+				}
+				/*
+				for(size_t j=1;j<=cs.num_convol_outputs();j++){
+					std::cout<<"aA["<<(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
+						aA[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
+				}
+				*/
+				acc = FieldT::zero();
+				flag = false;
+				for(auto &lt : cs.constraints[i].b2){
+					if(!flag){ 
+						conv_index2++;
+						flag = true;
+					}
+					FieldT temp = FieldT::one();
+					for(size_t j=1;j<=cs.num_convol_outputs();j++){
+						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						temp *= FieldT(j);
+						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						aB[(conv_index2-1)*cs.num_convol_outputs() +(j) + cs.num_constraints() + cs.num_inputs()] += acc;
+						//std::cout<<"aB["<<(conv_index2-1)*cs.num_convol_outputs()+(j-1)+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+					}
+					//aB[i*cs.num_convol() + j + cs.num_constraints() + cs.num_inputs()] += acc;
+				}
+				/*
+				for(size_t j=1;j<=cs.num_convol_outputs();j++){
+					std::cout<<"aB["<< +(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
+						aB[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
+				}
+				*/
 			}
 			libff::leave_block("Compute evaluation of polynomials A, B on set S");
 
@@ -300,6 +443,34 @@ namespace libsnark {
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
 				aC[i] += cs.constraints[i].c.evaluate(full_variable_assignment);
+			}
+
+			conv_index = 0;
+			for( size_t i=0;i<cs.num_constraints();i++){
+				FieldT acc = FieldT::zero();
+				bool flag = false;
+				for(auto &lt : cs.constraints[i].c2){
+					if(!flag){
+						conv_index++;
+						flag = true;
+					}
+					FieldT temp = FieldT::one();
+					for(size_t j=1;j<=cs.num_convol_outputs();j++){
+						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						temp *= FieldT(j);
+						aC[(conv_index-1)*cs.num_convol_outputs()+ (j) + cs.num_constraints() + cs.num_inputs()] += acc;
+						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						//std::cout<<"aC["<<(conv_index-1)*cs.num_convol_outputs() +(j-1)+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+					}
+				}
+				/*
+				//for debug
+				for(size_t j=1;j<=cs.num_convol_outputs();j++){
+					std::cout<<"aC["<<(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
+						aC[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
+				}
+				*/
+
 			}
 			libff::leave_block("Compute evaluation of polynomial C on set S");
 

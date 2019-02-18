@@ -67,6 +67,16 @@ void R1P_Gadget::addRank1Constraint(const LinearCombination& a,
     pb_->addRank1Constraint(a,b,c, name);
 }
 
+void R1P_Gadget::addRank1Constraint(const LinearCombination& a,
+                                    const LinearCombination& b,
+                                    const LinearCombination& c,
+                                    const LinearCombination& a2,
+                                    const LinearCombination& b2,
+                                    const LinearCombination& c2,
+                                    const string& name) {
+    pb_->addRank1Constraint(a,b,c, a2, b2, c2, name);
+}
+
 /***********************************/
 /***  End of Gadget Interfaces   ***/
 /***********************************/

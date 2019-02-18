@@ -67,6 +67,15 @@ public:
                             const LinearCombination& b,
                             const LinearCombination& c,
                             const ::std::string& name);
+
+    void addRank1Constraint(const LinearCombination& a,
+                            const LinearCombination& b,
+                            const LinearCombination& c,
+                            const LinearCombination& a2,
+                            const LinearCombination& b2,
+                            const LinearCombination& c2,
+                            const ::std::string& name);
+                            
     void addGeneralConstraint(const Polynomial& a,
                               const Polynomial& b,
                               const ::std::string& name);

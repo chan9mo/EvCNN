@@ -75,16 +75,27 @@ protected:
 /// where x is an assignment of field elements to the variables.
 class Rank1Constraint : public Constraint {
 private:
-    LinearCombination a_, b_, c_; // <a,x> * <b,x> = <c,x>
+    LinearCombination a_, b_, c_, a2_, b2_, c2_; // <a,x> * <b,x> = <c,x>
 public:
     Rank1Constraint(const LinearCombination& a,
                     const LinearCombination& b,
                     const LinearCombination& c,
                     const ::std::string& name);
 
+    Rank1Constraint(const LinearCombination& a,
+                    const LinearCombination& b,
+                    const LinearCombination& c,
+                    const LinearCombination& a2,
+                    const LinearCombination& b2,
+                    const LinearCombination& c2,
+                    const ::std::string& name);
+
     LinearCombination a() const;
     LinearCombination b() const;
     LinearCombination c() const;
+    LinearCombination a2() const;
+    LinearCombination b2() const;
+    LinearCombination c2() const;
 
     virtual bool isSatisfied(const VariableAssignment& assignment,
                              const PrintOptions& printOnFail = PrintOptions::NO_DBG_PRINT) const;
@@ -151,6 +162,7 @@ public:
     bool isSatisfied(const VariableAssignment& assignment,
                      const PrintOptions& printOnFail = PrintOptions::NO_DBG_PRINT) const;
     void addConstraint(const Rank1Constraint& c);
+    void addConstraintConvol(const Rank1Constraint& c);
     void addConstraint(const PolynomialConstraint& c);
     ::std::string annotation() const;
     Variable::set getUsedVariables() const;

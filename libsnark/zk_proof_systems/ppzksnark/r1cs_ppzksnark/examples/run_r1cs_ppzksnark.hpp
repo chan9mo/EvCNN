@@ -29,6 +29,9 @@ namespace libsnark {
 template<typename ppT>
 bool run_r1cs_ppzksnark(const r1cs_example<libff::Fr<ppT> > &example,
                         const bool test_serialization);
+template<typename ppT>
+bool run_r1cs_ppzksnark(const r1cs_convol_example<libff::Fr<ppT> > &example,
+                        const bool test_serialization);
 
 } // libsnark
 

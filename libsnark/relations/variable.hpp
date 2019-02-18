@@ -206,7 +206,7 @@ linear_combination<FieldT> operator-(const integer_coeff_t int_coeff, const line
 template<typename FieldT>
 linear_combination<FieldT> operator-(const FieldT &field_coeff, const linear_combination<FieldT> &lc);
 
-} // libsnark
+}// libsnark
 
 #include <libsnark/relations/variable.tcc>
 

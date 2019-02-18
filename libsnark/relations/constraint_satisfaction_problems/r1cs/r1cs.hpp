@@ -52,7 +52,7 @@ template<typename FieldT>
 class r1cs_constraint {
 public:
 
-    linear_combination<FieldT> a, b, c;
+    linear_combination<FieldT> a, b, c, a2, b2, c2;
 
     r1cs_constraint() {};
     r1cs_constraint(const linear_combination<FieldT> &a,
@@ -63,6 +63,21 @@ public:
                     const std::initializer_list<linear_combination<FieldT> > &B,
                     const std::initializer_list<linear_combination<FieldT> > &C);
 
+    r1cs_constraint(const linear_combination<FieldT> &a,
+                    const linear_combination<FieldT> &b,
+                    const linear_combination<FieldT> &c,
+                    const linear_combination<FieldT> &a2,
+                    const linear_combination<FieldT> &b2,
+                    const linear_combination<FieldT> &c2);
+
+    r1cs_constraint(const std::initializer_list<linear_combination<FieldT> > &A,
+                    const std::initializer_list<linear_combination<FieldT> > &B,
+                    const std::initializer_list<linear_combination<FieldT> > &C,
+                    const std::initializer_list<linear_combination<FieldT> > &A2,
+                    const std::initializer_list<linear_combination<FieldT> > &B2,
+                    const std::initializer_list<linear_combination<FieldT> > &C2);
+
+    
     bool operator==(const r1cs_constraint<FieldT> &other) const;
 
     friend std::ostream& operator<< <FieldT>(std::ostream &out, const r1cs_constraint<FieldT> &c);
@@ -114,14 +129,19 @@ class r1cs_constraint_system {
 public:
     size_t primary_input_size;
     size_t auxiliary_input_size;
+    size_t convol_outputs_size;
+    size_t convol_size;
 
     std::vector<r1cs_constraint<FieldT> > constraints;
 
-    r1cs_constraint_system() : primary_input_size(0), auxiliary_input_size(0) {}
+    r1cs_constraint_system() : primary_input_size(0), auxiliary_input_size(0),
+    convol_outputs_size(0), convol_size(0) {}
 
     size_t num_inputs() const;
     size_t num_variables() const;
     size_t num_constraints() const;
+    size_t num_convol() const;
+    size_t num_convol_outputs() const;
 
 #ifdef DEBUG
     std::map<size_t, std::string> constraint_annotations;
@@ -134,6 +154,7 @@ public:
 
     void add_constraint(const r1cs_constraint<FieldT> &c);
     void add_constraint(const r1cs_constraint<FieldT> &c, const std::string &annotation);
+    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels, const size_t num_outputs);
 
     void swap_AB_if_beneficial();
 

@@ -64,11 +64,23 @@ Rank1Constraint::Rank1Constraint(const LinearCombination &a,
                                const LinearCombination &b,
                                const LinearCombination &c,
                                const string& name)
-    : Constraint(name), a_(a), b_(b), c_(c) {}
+    : Constraint(name), a_(a), b_(b), c_(c), a2_(), b2_(), c2_() {}
+
+Rank1Constraint::Rank1Constraint(const LinearCombination &a,
+                               const LinearCombination &b,
+                               const LinearCombination &c,
+                               const LinearCombination &a2,
+                               const LinearCombination &b2,
+                               const LinearCombination &c2,
+                               const string& name)
+    : Constraint(name), a_(a), b_(b), c_(c), a2_(a2), b2_(b2), c2_(c2) {}
 
 LinearCombination Rank1Constraint::a() const {return a_;}
 LinearCombination Rank1Constraint::b() const {return b_;}
 LinearCombination Rank1Constraint::c() const {return c_;}
+LinearCombination Rank1Constraint::a2() const {return a2_;}
+LinearCombination Rank1Constraint::b2() const {return b2_;}
+LinearCombination Rank1Constraint::c2() const {return c2_;}
 
 bool Rank1Constraint::isSatisfied(const VariableAssignment& assignment,
                                   const PrintOptions& printOnFail) const {
@@ -180,6 +192,10 @@ const Variable::set PolynomialConstraint::getUsedVariables() const {
 
 
 void ConstraintSystem::addConstraint(const Rank1Constraint& c) {
+    constraintsPtrs_.emplace_back(::std::shared_ptr<Constraint>(new Rank1Constraint(c)));
+}
+
+void ConstraintSystem::addConstraintConvol(const Rank1Constraint& c) {
     constraintsPtrs_.emplace_back(::std::shared_ptr<Constraint>(new Rank1Constraint(c)));
 }
 

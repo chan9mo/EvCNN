@@ -137,6 +137,14 @@ public:
                                     const LinearCombination& b,
                                     const LinearCombination& c,
                                     const ::std::string& name);
+                                    
+    virtual void addRank1Constraint(const LinearCombination& a,
+                                    const LinearCombination& b,
+                                    const LinearCombination& c,
+                                    const LinearCombination& a2,
+                                    const LinearCombination& b2,
+                                    const LinearCombination& c2,
+                                    const ::std::string& name);                    
 private:
     virtual void init() = 0; // private in order to force programmer to invoke from a Gadget* only
     DISALLOW_COPY_AND_ASSIGN(R1P_Gadget);
