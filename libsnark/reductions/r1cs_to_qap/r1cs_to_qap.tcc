@@ -143,7 +143,10 @@ namespace libsnark {
 
 			libff::enter_block("Call to r1cs_to_qap_instance_map_with_evaluation");
 
-			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
+			//const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
+			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()));
+
+			std::cout<<"#constraint : "<< cs.num_constraints()<<"\t#input : "<< cs.num_inputs()<<"\t#convolOut : "<<(cs.num_convol_outputs())<<"\t#convol : "<<(cs.num_convol())<<std::endl;
 
 			std::vector<FieldT> At, Bt, Ct, Ht;
 
@@ -213,14 +216,14 @@ namespace libsnark {
 					for(size_t k=0;k<cs.num_convol_outputs();k++){
 
 						At[cs.constraints[i].a2.terms[j].index] +=
-							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_a-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
-						temp *= FieldT(k+1);
-							//u[cs.num_inputs()+1 + (cs.num_constraints()) + (cs.num_convol_outputs())*(conv_index_a-1) + k ] * (FieldT(k+1)^cs.constraints[i].a2.terms[j].coeff.as_ulong());
-						/*
+						//	u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_a-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						//temp *= FieldT(k+1);
+							u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k] * (FieldT(k+1)^cs.constraints[i].a2.terms[j].coeff.as_ulong());
+						
 						std::cout<<"At["<<(cs.constraints[i].a2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].a2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 				for(size_t j=0;j<cs.constraints[i].b2.terms.size();j++){
@@ -229,13 +232,14 @@ namespace libsnark {
 					if(j==0) conv_index_b ++;
 					for(size_t k=0;k<cs.num_convol_outputs();k++){
 						Bt[cs.constraints[i].b2.terms[j].index] +=
-							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_b-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
-						temp *= FieldT(k+1);
-						/*
+						//	u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_b-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						//temp *= FieldT(k+1);
+							u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_b-1)+k] * (FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						
 						std::cout<<"Bt["<<(cs.constraints[i].b2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_b-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].b2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 
@@ -245,13 +249,15 @@ namespace libsnark {
 					if(j==0) conv_index_c ++;
 					for(size_t k=0;k<cs.num_convol_outputs();k++){
 						Ct[cs.constraints[i].c2.terms[j].index] +=
-							u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_c-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
-						temp *= FieldT(k+1);
-						/*
+						//	u[(cs.num_inputs()+1+cs.num_constraints()) + (cs.num_convol_outputs()) *(conv_index_c-1) + k ] * temp;//(FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+						//temp *= FieldT(k+1);
+							u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_c-1)+k] * (FieldT(k+1)^cs.constraints[i].c2.terms[j].coeff.as_ulong());
+
+						
 						std::cout<<"Ct["<<(cs.constraints[i].c2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_c-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].c2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 				
@@ -323,7 +329,7 @@ namespace libsnark {
 
 			//const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1);
 			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()));
-			
+			std::cout<<"#constraint : "<< cs.num_constraints()<<"\t#input : "<< cs.num_inputs()<<"\t#convolOut : "<<(cs.num_convol_outputs())<<"\t#convol : "<<(cs.num_convol())<<std::endl;
 			r1cs_variable_assignment<FieldT> full_variable_assignment = primary_input;
 			full_variable_assignment.insert(full_variable_assignment.end(), auxiliary_input.begin(), auxiliary_input.end());
 
@@ -335,13 +341,17 @@ namespace libsnark {
 			for (size_t i = 0; i <= cs.num_inputs(); ++i)
 			{
 				aA[i+cs.num_constraints()] = (i > 0 ? full_variable_assignment[i-1] : FieldT::one());
+				std::cout<<"aA["<<i+cs.num_constraints()<<"] = "<<aA[i+cs.num_constraints()].as_ulong()<<std::endl;
+
 			}
 			/* account for all other constraints */
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
 				aA[i] += cs.constraints[i].a.evaluate(full_variable_assignment);
+				std::cout<<"aA["<<i<<"] = "<<aA[i].as_ulong()<<std::endl;
 				aB[i] += cs.constraints[i].b.evaluate(full_variable_assignment);
 			}
+
 
 			size_t conv_index = 0;
 			size_t conv_index2 = 0;
@@ -356,11 +366,15 @@ namespace libsnark {
 					FieldT temp = FieldT::one();
 					for(size_t j=1;j<=cs.num_convol_outputs();j++){
 						//if(lt.idex ==0) acc += (FieldT::one()*cs.conv_num_output()) * lt.coeff; //there is no first one in conv constraints
-						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
-						temp *= FieldT(j);
-						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						//acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						//temp *= FieldT(j);
+						acc = full_variable_assignment[lt.index-1] * (FieldT(j)^lt.coeff.as_ulong());
+
+						std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
 						aA[(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
-						//std::cout<<"aA["<<(j-1)+(conv_index-1)*cs.num_convol_outputs()+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+						std::cout<<"aA["<<(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+						//aB[(conv_index2-1)*cs.num_convol_outputs() +(j) + cs.num_constraints() + cs.num_inputs()+1] += acc;
+
 					}
 					//if(acc != FieldT::zero()){
 					//}
@@ -380,11 +394,13 @@ namespace libsnark {
 					}
 					FieldT temp = FieldT::one();
 					for(size_t j=1;j<=cs.num_convol_outputs();j++){
-						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
-						temp *= FieldT(j);
-						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
-						aB[(conv_index2-1)*cs.num_convol_outputs() +(j) + cs.num_constraints() + cs.num_inputs()] += acc;
-						//std::cout<<"aB["<<(conv_index2-1)*cs.num_convol_outputs()+(j-1)+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+						//acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						//temp *= FieldT(j);
+						acc = full_variable_assignment[lt.index-1] * (FieldT(j)^lt.coeff.as_ulong());
+
+						std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						aB[(j)+(conv_index2-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
+						std::cout<<"aB["<<(j)+(conv_index2-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
 					}
 					//aB[i*cs.num_convol() + j + cs.num_constraints() + cs.num_inputs()] += acc;
 				}
@@ -456,11 +472,13 @@ namespace libsnark {
 					}
 					FieldT temp = FieldT::one();
 					for(size_t j=1;j<=cs.num_convol_outputs();j++){
-						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
-						temp *= FieldT(j);
-						aC[(conv_index-1)*cs.num_convol_outputs()+ (j) + cs.num_constraints() + cs.num_inputs()] += acc;
-						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
-						//std::cout<<"aC["<<(conv_index-1)*cs.num_convol_outputs() +(j-1)+cs.num_constraints()+cs.num_inputs()<<"] = acc\n";
+						//acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+						//temp *= FieldT(j);
+						acc = full_variable_assignment[lt.index-1] * (FieldT(j)^lt.coeff.as_ulong());
+
+						aC[(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
+						std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+						std::cout<<"aC["<<(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
 					}
 				}
 				/*
@@ -538,6 +556,7 @@ namespace libsnark {
 	 * and
 	 *   each A_i,B_i,C_i is expressed in the Lagrange basis.
 	 */
+	/*
 	template<typename FieldT>
 		 qap_instance<FieldT> r1cs_to_qap_instance_map(const r1cs_constraint_convol_system<FieldT> &cs)
 	{
@@ -554,8 +573,8 @@ namespace libsnark {
 		/**
 		 * add and process the constraints
 		 *     input_i * 0 = 0
-		 * to ensure soundness of input consistency
-		 */
+		 // to ensure soundness of input consistency
+		 
 		for (size_t i = 0; i <= cs.num_inputs(); ++i)
 		{
 			A_in_Lagrange_basis[i][cs.num_constraints() + i] = FieldT::one();
@@ -566,7 +585,7 @@ namespace libsnark {
 		size_t conv_index_b = 0;
 		size_t conv_index_c = 0;
 
-		/* process all other constraints */
+		// process all other constraints 
 		for (size_t i = 0; i < cs.num_constraints(); ++i)
 		{
 			for (size_t j = 0; j < cs.constraints[i].a.terms.size(); ++j)
@@ -626,7 +645,7 @@ namespace libsnark {
 				std::move(B_in_Lagrange_basis),
 				std::move(C_in_Lagrange_basis));
 	}
-
+	*/
 	/**
 	 * Instance map for the R1CS-to-QAP reduction followed by evaluation of the resulting QAP instance.
 	 *
@@ -641,6 +660,7 @@ namespace libsnark {
 	 *   m = number of variables of the QAP
 	 *   n = degree of the QAP
 	 */
+	/*
 	template<typename FieldT>
 		qap_instance_evaluation<FieldT> r1cs_to_qap_instance_map_with_evaluation(const r1cs_constraint_convol_system<FieldT> &cs,
 				const FieldT &t)
@@ -677,7 +697,7 @@ namespace libsnark {
 			   }
 			   std::cout<<std::endl;
 			   }
-			 */
+			 
 			for (size_t i = 0; i <= cs.num_inputs(); ++i)
 			{
 				At[i] = u[cs.num_constraints() + i];
@@ -690,7 +710,7 @@ namespace libsnark {
 			size_t conv_index_c = 0;
 
 
-			/* process all other constraints */
+			/* process all other constraints 
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
 				//std::cout<<"At ";
@@ -729,7 +749,7 @@ namespace libsnark {
 						std::cout<<"At["<<(cs.constraints[i].a2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].a2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 				for(size_t j=0;j<cs.constraints[i].b2.terms.size();j++){
@@ -744,7 +764,7 @@ namespace libsnark {
 						std::cout<<"Bt["<<(cs.constraints[i].b2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_b-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].b2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 
@@ -760,7 +780,7 @@ namespace libsnark {
 						std::cout<<"Ct["<<(cs.constraints[i].c2.terms[j].index)<<
 							"] = u["<<(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_c-1)+k<<
 							"]*("<<j+1<<")^"<<cs.constraints[i].c2.terms[j].coeff.as_ulong()<<"\n";
-						*/
+						
 					}
 				}
 			}
@@ -786,6 +806,7 @@ namespace libsnark {
 					std::move(Ht),
 					Zt);
 		}
+		*/
 
 	/**
 	 * Witness map for the R1CS-to-QAP reduction.
@@ -816,6 +837,7 @@ namespace libsnark {
 	 * The code below is not as simple as the above high-level description due to
 	 * some reshuffling to save space.
 	 */
+	/*
 	template<typename FieldT>
 		qap_witness<FieldT> r1cs_to_qap_witness_map(const r1cs_constraint_convol_system<FieldT> &cs,
 				const r1cs_primary_input<FieldT> &primary_input,
@@ -826,7 +848,7 @@ namespace libsnark {
 		{
 			libff::enter_block("Call to r1cs_convol_to_qap_witness_map");
 
-			/* sanity check */
+			/* sanity check 
 			assert(cs.is_satisfied(primary_input, auxiliary_input));
 
 			const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()));
@@ -839,12 +861,12 @@ namespace libsnark {
 			std::vector<FieldT> aA(domain->m, FieldT::zero()), aB(domain->m, FieldT::zero());
 
 			std::cout<<"num inputs : "<<cs.num_inputs()<<" num constraints : "<< cs.num_constraints()<<"\n";
-			/* account for the additional constraints input_i * 0 = 0 */
+			/* account for the additional constraints input_i * 0 = 0 
 			for (size_t i = 0; i <= cs.num_inputs(); ++i)
 			{
 				aA[i+cs.num_constraints()] = (i > 0 ? full_variable_assignment[i-1] : FieldT::one());
 			}
-			/* account for all other constraints */
+			/* account for all other constraints 
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
 				aA[i] += cs.constraints[i].a.evaluate(full_variable_assignment);
@@ -878,7 +900,7 @@ namespace libsnark {
 					std::cout<<"aA["<<(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
 						aA[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
 				}
-				*/
+				
 				acc = FieldT::zero();
 				flag = false;
 				for(auto &lt : cs.constraints[i].b2){
@@ -901,7 +923,7 @@ namespace libsnark {
 					std::cout<<"aB["<< +(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
 						aB[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
 				}
-				*/
+				
 			}
 			libff::leave_block("Compute evaluation of polynomials A, B on set S");
 
@@ -918,7 +940,7 @@ namespace libsnark {
 #ifdef MULTICORE
 #pragma omp parallel for
 #endif
-			/* add coefficients of the polynomial (d2*A + d1*B - d3) + d1*d2*Z */
+			// add coefficients of the polynomial (d2*A + d1*B - d3) + d1*d2*Z 
 			for (size_t i = 0; i < domain->m; ++i)
 			{
 				coefficients_for_H[i] = d2*aA[i] + d1*aB[i];
@@ -977,7 +999,7 @@ namespace libsnark {
 					std::cout<<"aC["<<(j)+cs.num_constraints()+cs.num_inputs()<<"] ="<<
 						aC[(j) + cs.num_constraints() + cs.num_inputs()].as_ulong() <<"\n";
 				}
-				*/
+				/
 
 			}
 			libff::leave_block("Compute evaluation of polynomial C on set S");
@@ -1029,7 +1051,7 @@ namespace libsnark {
 					full_variable_assignment,
 					std::move(coefficients_for_H));
 		}
-
+*/
 } // libsnark
 
 #endif // R1CS_TO_QP_TCC_
