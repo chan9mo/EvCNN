@@ -13,7 +13,7 @@ set(
 option(
   DEBUG
   "Enable debugging mode"
-  OFF
+  ON
 )
 option(
   LOWMEM
