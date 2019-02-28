@@ -42,6 +42,8 @@ protected:
     ParamsCPtr pParams_; // TODO try to refactor this out and use inheritance for different types
                          // of protoboards, for instance TinyRAMProtoboard : public Protoboard
                          // This may not be trivial because of Gadget multiple inheritance scheme
+    size_t numConvolInputs_;
+    size_t numConvolKernels_;
 
     Protoboard(const FieldType& fieldType, ParamsCPtr pParams);
 public:
@@ -49,10 +51,15 @@ public:
     static ProtoboardPtr create(const FieldType& fieldType, ParamsCPtr pParams = NULL) {
         return ProtoboardPtr(new Protoboard(fieldType, pParams));
     }
+    size_t convol_outputs_size;
+    size_t convol_size;
+
     size_t numVars() const {return assignment_.size();} // TODO change to take num from constraintSys_
     //size_t numVars() const {return constraintSystem_.getUsedVariables().size();} // TODO change to take num from constraintSys_
 
     size_t numInputs() const {return numInputs_;} // TODO Madars How do we book keep this?
+    size_t numConvolInputs() const {return numConvolInputs_;}
+    size_t numConvolKernels() const {return numConvolKernels_;}
     ParamsCPtr params() const {return pParams_;}
     FElem& val(const Variable& var);
     FElem val(const LinearCombination& lc) const;

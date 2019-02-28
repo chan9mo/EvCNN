@@ -154,7 +154,7 @@ public:
 
     void add_constraint(const r1cs_constraint<FieldT> &c);
     void add_constraint(const r1cs_constraint<FieldT> &c, const std::string &annotation);
-    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels, const size_t num_outputs);
+    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels);
 
     void swap_AB_if_beneficial();
 
@@ -187,6 +187,7 @@ std::istream& operator>>(std::istream &in, r1cs_constraint_convol<FieldT> &c);
  *
  * A R1CS constraint is used to construct a R1CS constraint system (see below).
  */
+/*
 template<typename FieldT>
 class r1cs_constraint_convol {
 public:
@@ -221,9 +222,9 @@ public:
     friend std::ostream& operator<< <FieldT>(std::ostream &out, const r1cs_constraint_convol<FieldT> &c);
     friend std::istream& operator>> <FieldT>(std::istream &in, r1cs_constraint_convol<FieldT> &c);
 };
-
+*/
 /************************* R1CS constraint system ****************************/
-
+/*
 template<typename FieldT>
 class r1cs_constraint_convol_system;
 
@@ -245,6 +246,7 @@ std::istream& operator>>(std::istream &in, r1cs_constraint_convol_system<FieldT>
  * The 0-th variable (i.e., "x_{0}") always represents the constant 1.
  * Thus, the 0-th variable is not included in num_variables.
  */
+/*
 template<typename FieldT>
 class r1cs_constraint_convol_system {
 public:
@@ -275,7 +277,7 @@ public:
 
     void add_constraint(const r1cs_constraint_convol<FieldT> &c);
     void add_constraint(const r1cs_constraint_convol<FieldT> &c, const std::string &annotation);
-    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels, const size_t num_outputs);
+    void add_convol_constraint(const size_t num_inputs, const size_t num_kernels);
 
     void swap_AB_if_beneficial();
 
@@ -286,7 +288,7 @@ public:
 
     void report_linear_constraint_statistics() const;
 };
-
+*/
 
 } // libsnark
 

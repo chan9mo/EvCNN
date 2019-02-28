@@ -403,14 +403,14 @@ template<typename FieldT>
 			std::cout<<"kernels :";
 			for(size_t i=0; i< num_kernels;i++){
 				full_variable_assignment.push_back(kernels[i]);
-				//std::cout<<kernels[i].as_ulong()<<"\t";
+				std::cout<<kernels[i].as_ulong()<<"\t";
 			}
 
 			std::cout<<"\ninputs :";
 			for (size_t i = 0; i < num_inputs; ++i)
 			{
 				full_variable_assignment.push_back(inputs[i]);
-				//std::cout<<inputs[i].as_ulong()<<"\t";
+				std::cout<<inputs[i].as_ulong()<<"\t";
 			}
 
 
@@ -421,18 +421,18 @@ template<typename FieldT>
 					for(size_t l=0;l<num_kernels;l++){
 						if((k+l) == i)
 						{
-							//std::cout<<"["<<k<<"]["<<l<<"]";
+							//std::cout<<"["<<k<<"]["<<l<<"]("<<(inputs[k]*kernels[l]).as_ulong()<<")";
 							y += inputs[k] * kernels[l];
 						}
 					}
 				}
-				//std::cout<<y.as_ulong()<<"\t";
+				std::cout<<y.as_ulong()<<"\t";
 				full_variable_assignment.push_back(y);
 			}
 			std::cout<<"\n";
 			
-			cs.add_convol_constraint(num_inputs, num_kernels, cs.convol_outputs_size);
-
+			cs.add_convol_constraint(num_inputs, num_kernels); //num_inputs + num_kernels - 1);
+			std::cout<<"convol size = "<<cs.convol_size<<"\nconvol output size = "<<cs.convol_outputs_size<<std::endl;
 			/* split variable assignment */
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
 			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
@@ -448,7 +448,7 @@ template<typename FieldT>
 
 			return r1cs_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
 		}
-
+		/*
 		template<typename FieldT>
 		r1cs_convol_example<FieldT> generate_r1cs_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol)
 		{
@@ -458,7 +458,7 @@ template<typename FieldT>
 
 			r1cs_constraint_convol_system<FieldT> cs;
 			cs.primary_input_size = num_inputs + num_kernels;
-			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
+			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; // we will add one auxiliary variable per constraint 
 			cs.convol_size = num_convol;
 			cs.convol_outputs_size = num_inputs + num_kernels - 1;
 
@@ -499,11 +499,11 @@ template<typename FieldT>
 			
 			cs.add_convol_constraint(num_inputs, num_kernels, cs.convol_outputs_size);
 
-			/* split variable assignment */
+			// split variable assignment 
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
 			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
 
-			/* sanity checks */
+			// sanity checks 
 			assert(cs.num_variables() == full_variable_assignment.size());
 			assert(cs.num_variables() >= num_inputs);
 			assert(cs.num_inputs() == num_inputs);
@@ -524,7 +524,7 @@ template<typename FieldT>
 
 			r1cs_constraint_convol_system<FieldT> cs;
 			cs.primary_input_size = num_inputs + num_kernels;
-			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
+			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; // we will add one auxiliary variable per constraint 
 			cs.convol_size = num_convol;
 			cs.convol_outputs_size = num_inputs + num_kernels - 1;
 
@@ -565,7 +565,7 @@ template<typename FieldT>
 			
 			cs.add_convol_constraint(num_inputs, num_kernels, cs.convol_outputs_size);
 
-			/* split variable assignment */
+			// split variable assignment 
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
 			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
 
@@ -579,7 +579,7 @@ template<typename FieldT>
 
 			
 
-			/* sanity checks */
+			// sanity checks 
 			//assert(cs.num_variables() == full_variable_assignment.size());
 			//assert(cs.num_variables() >= num_inputs);
 			//assert(cs.num_inputs() == num_inputs);
@@ -652,11 +652,11 @@ template<typename FieldT>
 			cs.add_constraint(r1cs_constraint_convol<FieldT>(A, B, C));
 			full_variable_assignment.push_back(fin.squared());
 
-			/* split variable assignment */
+			// split variable assignment 
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs);
 			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs, full_variable_assignment.end());
 
-			/* sanity checks */
+			// sanity checks 
 			//assert(cs.num_variables() == full_variable_assignment.size());
 			//assert(cs.num_variables() >= num_inputs);
 			//assert(cs.num_inputs() == num_inputs);
@@ -667,6 +667,7 @@ template<typename FieldT>
 
 			return r1cs_convol_example<FieldT>(std::move(cs), std::move(primary_input), std::move(auxiliary_input));
 		}
+		*/
 } // libsnark
 
 #endif // R1CS_EXAMPLES_TCC

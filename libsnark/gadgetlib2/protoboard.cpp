@@ -26,7 +26,7 @@ namespace gadgetlib2 {
 /*************************************************************************************************/
 
 Protoboard::Protoboard(const FieldType& fieldType, ParamsCPtr pParams)
-    : numInputs_(0), pParams_(pParams), fieldType_(fieldType) {}
+    : numInputs_(0), pParams_(pParams), fieldType_(fieldType), convol_outputs_size(0), convol_size(0) {}
 
 
 FElem& Protoboard::val(const Variable &var) {

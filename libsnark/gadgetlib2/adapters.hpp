@@ -44,8 +44,12 @@ public:
     typedef ::std::pair<sparse_vec_t, Fp_elem_t> linear_combination_t;
     typedef ::std::tuple<linear_combination_t,
                          linear_combination_t,
+                         linear_combination_t,
+                         linear_combination_t,
+                         linear_combination_t,
                          linear_combination_t
                          > constraint_t;
+    /*
     typedef ::std::tuple<linear_combination_t,
                          linear_combination_t,
                          linear_combination_t,
@@ -53,16 +57,19 @@ public:
                          linear_combination_t,
                          linear_combination_t
                          > constraint2_t;
+    */
     typedef ::std::vector<constraint_t> constraint_sys_t;
+    //typedef ::std::vector<constraint2_t> constraint2_sys_t;
     typedef ::std::map<variable_index_t, Fp_elem_t> assignment_t;
     typedef ::std::pair<constraint_sys_t, assignment_t> protoboard_t;
+    //typedef ::std::pair<constraint_sys2_t, assignment_t> protoboard2_t;
 
     GadgetLibAdapter() {};
 
     linear_term_t convert(const LinearTerm& lt) const;
     linear_combination_t convert(const LinearCombination& lc) const;
     constraint_t convert(const Constraint& constraint) const;
-    constraint2_t convert(const Constraint& constraint, bool convol) const;
+    //constraint2_t convert(const Constraint& constraint, bool convol) const;
     constraint_sys_t convert(const ConstraintSystem& constraint_sys) const;
     assignment_t convert(const VariableAssignment& assignment) const;
     static void resetVariableIndex(); ///< Resets variable index to 0 to make variable indices deterministic.

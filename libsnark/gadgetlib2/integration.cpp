@@ -18,11 +18,36 @@ linear_combination<libff::Fr<libff::default_ec_pp> > convert_gadgetlib2_linear_c
     linear_combination<FieldT> result = lc.second * variable<FieldT>(0);
     for (const GLA::linear_term_t &lt : lc.first)
     {
+        //std::cout<<"fir : "<<lt.first <<" sec : "<<lt.second<<std::endl;
         result = result + lt.second * variable<FieldT>(lt.first+1);
     }
 
     return result;
 }
+
+/*
+linear_combination<libff::Fr<libff::default_ec_pp> > convert_gadgetlib2_linear_combination(const gadgetlib2::GadgetLibAdapter::linear_combination_t &lc, bool convol)
+{
+    typedef libff::Fr<libff::default_ec_pp> FieldT;
+    typedef gadgetlib2::GadgetLibAdapter GLA;
+
+    //linear_combination<FieldT> result(0); //= lc.second * variable<FieldT>(0);
+    bool first = true;
+    linear_combination<FieldT> result();
+    for (const GLA::linear_term_t &lt : lc.first)
+    {
+        if(first){
+            result = lt.second * variable<FieldT>(lt.first+1);
+        }
+        else{
+        //std::cout<<"fir : "<<lt.first <<" sec : "<<lt.second.as_ulong()<<std::endl;
+        result = result + lt.second * variable<FieldT>(lt.first+1);
+        }
+    }
+
+    return result;
+}
+*/
 
 r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_system_from_gadgetlib2(const gadgetlib2::Protoboard &pb)
 {
@@ -60,13 +85,18 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
     {
         result.constraints.emplace_back(r1cs_constraint<FieldT>(convert_gadgetlib2_linear_combination(std::get<0>(constr)),
                                                                 convert_gadgetlib2_linear_combination(std::get<1>(constr)),
-                                                                convert_gadgetlib2_linear_combination(std::get<2>(constr))));
+                                                                convert_gadgetlib2_linear_combination(std::get<2>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<3>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<4>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<5>(constr))));
     }
     //The number of variables is the highest index created.
     //TODO: If there are multiple protoboards, or variables not assigned to a protoboard, then getNextFreeIndex() is *not* the number of variables! See also in get_variable_assignment_from_gadgetlib2.
     const size_t num_variables = GLA::getNextFreeIndex();
     result.primary_input_size = pb.numInputs();
     result.auxiliary_input_size = num_variables - pb.numInputs();
+    result.convol_outputs_size = pb.convol_outputs_size;
+    result.convol_size = pb.convol_size;
     return result;
 }
 
@@ -86,6 +116,12 @@ r1cs_variable_assignment<libff::Fr<libff::default_ec_pp> > get_variable_assignme
     for(VariableAssignment::iterator iter = assignment.begin(); iter != assignment.end(); ++iter){
     	result[GLA::getVariableIndex(iter->first)] = adapter.convert(iter->second);
     }
+
+    std::cout<<"var gadget : ";
+    for(size_t i=0;i<result.size();i++){
+        std::cout<<result[i].as_ulong()<<"\t";
+    }
+    std::cout<<std::endl;
 
     return result;
 }

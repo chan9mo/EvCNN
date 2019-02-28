@@ -483,7 +483,7 @@ FElem LinearCombination::eval(const VariableAssignment& assignment) const {
 }
 
 ::std::string LinearCombination::asString() const {
-#ifdef DEBUG
+//#ifdef DEBUG
     ::std::string retval;
     auto it = linearTerms_.begin();
     if (it == linearTerms_.end()) {
@@ -498,9 +498,9 @@ FElem LinearCombination::eval(const VariableAssignment& assignment) const {
         retval += " + " + constant_.asString();
     }
     return retval;
-#else // ifdef DEBUG
-    return "";
-#endif // ifdef DEBUG
+//#else // ifdef DEBUG
+//    return "";
+//#endif // ifdef DEBUG
 }
 
 const Variable::set LinearCombination::getUsedVariables() const {
@@ -555,7 +555,7 @@ const FElem Monomial::getCoefficient() const{
 }
 
 ::std::string Monomial::asString() const {
-#ifdef DEBUG
+//#ifdef DEBUG
     if (variables_.size() == 0) {
         return coeff_.asString();
     }
@@ -569,9 +569,9 @@ const FElem Monomial::getCoefficient() const{
         retval += "*" + iter->name();
     }
     return retval;
-#else // ifdef DEBUG
-    return "";
-#endif // ifdef DEBUG
+//#else // ifdef DEBUG
+//    return "";
+//#endif // ifdef DEBUG
 }
 
 Monomial Monomial::operator-() const {
@@ -632,9 +632,9 @@ const FElem Polynomial::getConstant()const{
 }
 
 ::std::string Polynomial::asString() const {
-#   ifndef DEBUG
-        return "";
-#   endif
+//#   ifndef DEBUG
+//        return "";
+//#   endif
     if (monomials_.size() == 0) {
         return constant_.asString();
     }

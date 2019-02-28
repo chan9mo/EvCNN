@@ -31,17 +31,18 @@ GLA::linear_combination_t GLA::convert(const LinearCombination& lc) const {
     const Fp_elem_t offset = convert(lc.constant_);
     return{ sparse_vec, offset };
 }
-
+/* origin constraint_t convert
 GLA::constraint_t GLA::convert(const Constraint& constraint) const {
     const auto rank1_constraint = dynamic_cast<const Rank1Constraint&>(constraint);
     return constraint_t(convert(rank1_constraint.a()),
         convert(rank1_constraint.b()),
         convert(rank1_constraint.c()));
 }
+*/
 
-GLA::constraint2_t GLA::convert(const Constraint& constraint, bool convol) const {
+GLA::constraint_t GLA::convert(const Constraint& constraint) const {
     const auto rank1_constraint = dynamic_cast<const Rank1Constraint&>(constraint);
-    return constraint2_t(convert(rank1_constraint.a()),
+    return constraint_t(convert(rank1_constraint.a()),
         convert(rank1_constraint.b()),
         convert(rank1_constraint.c()),
         convert(rank1_constraint.a2()),

@@ -375,8 +375,7 @@ void r1cs_constraint_system<FieldT>::report_linear_constraint_statistics() const
 }
 
 template<typename FieldT>
-void r1cs_constraint_system<FieldT>::add_convol_constraint(const size_t num_inputs, const size_t num_kernels,
-const size_t num_outputs)
+void r1cs_constraint_system<FieldT>::add_convol_constraint(const size_t num_inputs, const size_t num_kernels)
 {
     linear_combination<FieldT> A, B, C, A2, B2, C2;
     for(size_t i=0;i<num_kernels;i++){
@@ -389,13 +388,13 @@ const size_t num_outputs)
         C2.add_term(num_kernels+num_inputs+i+1, i);
 	}
 
-    convol_outputs_size = num_outputs;
+    convol_outputs_size = num_kernels+num_inputs-1;//num_outputs;
     convol_size++;
 
     constraints.emplace_back(r1cs_constraint<FieldT>(A, B, C, A2, B2, C2));
 }
-
-///////NEW SYSTEM***************************////
+/*
+///////NEW SYSTEM////
 template<typename FieldT>
 r1cs_constraint_convol<FieldT>::r1cs_constraint_convol(const linear_combination<FieldT> &a,
                                          const linear_combination<FieldT> &b,
@@ -617,8 +616,7 @@ void r1cs_constraint_convol_system<FieldT>::add_constraint(const r1cs_constraint
 }
 
 template<typename FieldT>
-void r1cs_constraint_convol_system<FieldT>::add_convol_constraint(const size_t num_inputs, const size_t num_kernels,
-const size_t num_outputs)
+void r1cs_constraint_convol_system<FieldT>::add_convol_constraint(const size_t num_inputs, const size_t num_kernels)
 {
     linear_combination<FieldT> A, B, C, A2, B2, C2;
     for(size_t i=0;i<num_kernels;i++){
@@ -764,6 +762,7 @@ void r1cs_constraint_convol_system<FieldT>::report_linear_constraint_statistics(
     }
 #endif
 }
+*/
 
 } // libsnark
 #endif // R1CS_TCC_
