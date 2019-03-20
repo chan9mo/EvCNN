@@ -58,10 +58,10 @@ template<typename FieldT>
 r1cs_constraint<FieldT>::r1cs_constraint(const linear_combination<FieldT> &a,
                                          const linear_combination<FieldT> &b,
                                          const linear_combination<FieldT> &c,
-                                         const linear_combination<FieldT> &a2,
-                                         const linear_combination<FieldT> &b2,
-                                         const linear_combination<FieldT> &c2) :
-    a(a), b(b), c(c), a2(a2), b2(b2), c2(c2)
+                                         const linear_combination<FieldT> &a1,
+                                         const linear_combination<FieldT> &b1,
+                                         const linear_combination<FieldT> &c1) :
+    a(a), b(b), c(c), a1(a1), b1(b1), c1(c1)
 {
 }
 
@@ -69,6 +69,58 @@ template<typename FieldT>
 r1cs_constraint<FieldT>::r1cs_constraint(const std::initializer_list<linear_combination<FieldT> > &A,
                                          const std::initializer_list<linear_combination<FieldT> > &B,
                                          const std::initializer_list<linear_combination<FieldT> > &C,
+                                         const std::initializer_list<linear_combination<FieldT> > &A1,
+                                         const std::initializer_list<linear_combination<FieldT> > &B1,
+                                         const std::initializer_list<linear_combination<FieldT> > &C1)
+{
+    for (auto lc_A : A)
+    {
+        a.terms.insert(a.terms.end(), lc_A.terms.begin(), lc_A.terms.end());
+    }
+    for (auto lc_B : B)
+    {
+        b.terms.insert(b.terms.end(), lc_B.terms.begin(), lc_B.terms.end());
+    }
+    for (auto lc_C : C)
+    {
+        c.terms.insert(c.terms.end(), lc_C.terms.begin(), lc_C.terms.end());
+    }
+
+    for (auto lc_A : A1)
+    {
+        a1.terms.insert(a1.terms.end(), lc_A.terms.begin(), lc_A.terms.end());
+    }
+    for (auto lc_B : B1)
+    {
+        b1.terms.insert(b1.terms.end(), lc_B.terms.begin(), lc_B.terms.end());
+    }
+    for (auto lc_C : C1)
+    {
+        c1.terms.insert(c1.terms.end(), lc_C.terms.begin(), lc_C.terms.end());
+    }
+}
+
+template<typename FieldT>
+r1cs_constraint<FieldT>::r1cs_constraint(const linear_combination<FieldT> &a,
+                                         const linear_combination<FieldT> &b,
+                                         const linear_combination<FieldT> &c,
+                                         const linear_combination<FieldT> &a1,
+                                         const linear_combination<FieldT> &b1,
+                                         const linear_combination<FieldT> &c1,
+                                         const linear_combination<FieldT> &a2,
+                                         const linear_combination<FieldT> &b2,
+                                         const linear_combination<FieldT> &c2) :
+    a(a), b(b), c(c), a1(a1), b1(b1), c1(c1), a2(a2), b2(b2), c2(c2)
+{
+}
+
+template<typename FieldT>
+r1cs_constraint<FieldT>::r1cs_constraint(const std::initializer_list<linear_combination<FieldT> > &A,
+                                         const std::initializer_list<linear_combination<FieldT> > &B,
+                                         const std::initializer_list<linear_combination<FieldT> > &C,
+                                         const std::initializer_list<linear_combination<FieldT> > &A1,
+                                         const std::initializer_list<linear_combination<FieldT> > &B1,
+                                         const std::initializer_list<linear_combination<FieldT> > &C1,
                                          const std::initializer_list<linear_combination<FieldT> > &A2,
                                          const std::initializer_list<linear_combination<FieldT> > &B2,
                                          const std::initializer_list<linear_combination<FieldT> > &C2)
@@ -84,6 +136,19 @@ r1cs_constraint<FieldT>::r1cs_constraint(const std::initializer_list<linear_comb
     for (auto lc_C : C)
     {
         c.terms.insert(c.terms.end(), lc_C.terms.begin(), lc_C.terms.end());
+    }
+
+    for (auto lc_A : A1)
+    {
+        a1.terms.insert(a1.terms.end(), lc_A.terms.begin(), lc_A.terms.end());
+    }
+    for (auto lc_B : B1)
+    {
+        b1.terms.insert(b1.terms.end(), lc_B.terms.begin(), lc_B.terms.end());
+    }
+    for (auto lc_C : C1)
+    {
+        c1.terms.insert(c1.terms.end(), lc_C.terms.begin(), lc_C.terms.end());
     }
 
     for (auto lc_A : A2)
@@ -106,6 +171,9 @@ bool r1cs_constraint<FieldT>::operator==(const r1cs_constraint<FieldT> &other) c
     return (this->a == other.a &&
             this->b == other.b &&
             this->c == other.c &&
+            this->a2 == other.a1 &&
+            this->b2 == other.b1 &&
+            this->c2 == other.c1 &&
             this->a2 == other.a2 &&
             this->b2 == other.b2 &&
             this->c2 == other.c2);
@@ -117,6 +185,9 @@ std::ostream& operator<<(std::ostream &out, const r1cs_constraint<FieldT> &c)
     out << c.a;
     out << c.b;
     out << c.c;
+    out << c.a1;
+    out << c.b1;
+    out << c.c1;
     out << c.a2;
     out << c.b2;
     out << c.c2;
@@ -130,6 +201,9 @@ std::istream& operator>>(std::istream &in, r1cs_constraint<FieldT> &c)
     in >> c.a;
     in >> c.b;
     in >> c.c;
+    in >> c.a1;
+    in >> c.b1;
+    in >> c.c1;
     in >> c.a2;
     in >> c.b2;
     in >> c.c2;
@@ -166,6 +240,41 @@ template<typename FieldT>
 size_t r1cs_constraint_system<FieldT>::num_convol_outputs() const
 {
     return convol_outputs_size;
+}
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_outputs2() const
+{
+    return convol_outputs_size2;
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_input_height() const
+{
+    return convol_input_height;
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_input_width() const
+{
+    return convol_input_width;
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_kernel_height() const
+{
+    return convol_kernel_height;
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_kernel_width() const
+{
+    return convol_kernel_width;
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_dimensions() const
+{
+    return convol_dimensions;
 }
 
 template<typename FieldT>
@@ -377,21 +486,21 @@ void r1cs_constraint_system<FieldT>::report_linear_constraint_statistics() const
 template<typename FieldT>
 void r1cs_constraint_system<FieldT>::add_convol_constraint(const size_t num_inputs, const size_t num_kernels)
 {
-    linear_combination<FieldT> A, B, C, A2, B2, C2;
+    linear_combination<FieldT> A, B, C, A1, B1, C1;
     for(size_t i=0;i<num_kernels;i++){
-        A2.add_term(i+1, i);
+        A1.add_term(i+1, i);
     }
     for(size_t i=0;i<num_inputs;i++){
-        B2.add_term(num_kernels+i+1, i);
+        B1.add_term(num_kernels+i+1, i);
     }
     for(size_t i=0; i<num_kernels+num_inputs-1;i++){
-        C2.add_term(num_kernels+num_inputs+i+1, i);
+        C1.add_term(num_kernels+num_inputs+i+1, i);
 	}
 
     convol_outputs_size = num_kernels+num_inputs-1;//num_outputs;
     convol_size++;
 
-    constraints.emplace_back(r1cs_constraint<FieldT>(A, B, C, A2, B2, C2));
+    constraints.emplace_back(r1cs_constraint<FieldT>(A, B, C, A1, B1, C1));
 }
 /*
 ///////NEW SYSTEM////

@@ -52,7 +52,7 @@ template<typename FieldT>
 class r1cs_constraint {
 public:
 
-    linear_combination<FieldT> a, b, c, a2, b2, c2;
+    linear_combination<FieldT> a, b, c, a1, b1, c1, a2, b2, c2;
 
     r1cs_constraint() {};
     r1cs_constraint(const linear_combination<FieldT> &a,
@@ -66,6 +66,23 @@ public:
     r1cs_constraint(const linear_combination<FieldT> &a,
                     const linear_combination<FieldT> &b,
                     const linear_combination<FieldT> &c,
+                    const linear_combination<FieldT> &a1,
+                    const linear_combination<FieldT> &b1,
+                    const linear_combination<FieldT> &c1);
+
+    r1cs_constraint(const std::initializer_list<linear_combination<FieldT> > &A,
+                    const std::initializer_list<linear_combination<FieldT> > &B,
+                    const std::initializer_list<linear_combination<FieldT> > &C,
+                    const std::initializer_list<linear_combination<FieldT> > &A1,
+                    const std::initializer_list<linear_combination<FieldT> > &B1,
+                    const std::initializer_list<linear_combination<FieldT> > &C1);
+
+    r1cs_constraint(const linear_combination<FieldT> &a,
+                    const linear_combination<FieldT> &b,
+                    const linear_combination<FieldT> &c,
+                    const linear_combination<FieldT> &a1,
+                    const linear_combination<FieldT> &b1,
+                    const linear_combination<FieldT> &c1,
                     const linear_combination<FieldT> &a2,
                     const linear_combination<FieldT> &b2,
                     const linear_combination<FieldT> &c2);
@@ -73,6 +90,9 @@ public:
     r1cs_constraint(const std::initializer_list<linear_combination<FieldT> > &A,
                     const std::initializer_list<linear_combination<FieldT> > &B,
                     const std::initializer_list<linear_combination<FieldT> > &C,
+                    const std::initializer_list<linear_combination<FieldT> > &A1,
+                    const std::initializer_list<linear_combination<FieldT> > &B1,
+                    const std::initializer_list<linear_combination<FieldT> > &C1,
                     const std::initializer_list<linear_combination<FieldT> > &A2,
                     const std::initializer_list<linear_combination<FieldT> > &B2,
                     const std::initializer_list<linear_combination<FieldT> > &C2);
@@ -130,7 +150,14 @@ public:
     size_t primary_input_size;
     size_t auxiliary_input_size;
     size_t convol_outputs_size;
+    size_t convol_outputs_size2;
+    size_t convol_outputs_size3;
     size_t convol_size;
+    size_t convol_input_height;
+    size_t convol_input_width;
+    size_t convol_kernel_height;
+    size_t convol_kernel_width;
+    size_t convol_dimensions;
 
     std::vector<r1cs_constraint<FieldT> > constraints;
 
@@ -142,6 +169,12 @@ public:
     size_t num_constraints() const;
     size_t num_convol() const;
     size_t num_convol_outputs() const;
+    size_t num_convol_outputs2() const;
+    size_t num_convol_input_height() const;
+    size_t num_convol_input_width() const;
+    size_t num_convol_kernel_height() const;
+    size_t num_convol_kernel_width() const;
+    size_t num_convol_dimensions() const;
 
 #ifdef DEBUG
     std::map<size_t, std::string> constraint_annotations;
