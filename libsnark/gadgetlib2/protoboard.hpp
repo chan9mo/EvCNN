@@ -51,8 +51,18 @@ public:
     static ProtoboardPtr create(const FieldType& fieldType, ParamsCPtr pParams = NULL) {
         return ProtoboardPtr(new Protoboard(fieldType, pParams));
     }
+
     size_t convol_outputs_size;
+    size_t convol_outputs_size2;
+    size_t convol_outputs_size3;
+
+    size_t convol_input_height;
+    size_t convol_input_width;
+    size_t convol_kernel_height;
+    size_t convol_kernel_width;
+
     size_t convol_size;
+    size_t convol_dimensions;
 
     size_t numVars() const {return assignment_.size();} // TODO change to take num from constraintSys_
     //size_t numVars() const {return constraintSystem_.getUsedVariables().size();} // TODO change to take num from constraintSys_
@@ -78,6 +88,17 @@ public:
     void addRank1Constraint(const LinearCombination& a,
                             const LinearCombination& b,
                             const LinearCombination& c,
+                            const LinearCombination& a1,
+                            const LinearCombination& b1,
+                            const LinearCombination& c1,
+                            const ::std::string& name);
+
+    void addRank1Constraint(const LinearCombination& a,
+                            const LinearCombination& b,
+                            const LinearCombination& c,
+                            const LinearCombination& a1,
+                            const LinearCombination& b1,
+                            const LinearCombination& c1,
                             const LinearCombination& a2,
                             const LinearCombination& b2,
                             const LinearCombination& c2,

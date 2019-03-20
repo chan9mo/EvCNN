@@ -64,20 +64,35 @@ Rank1Constraint::Rank1Constraint(const LinearCombination &a,
                                const LinearCombination &b,
                                const LinearCombination &c,
                                const string& name)
-    : Constraint(name), a_(a), b_(b), c_(c), a2_(), b2_(), c2_() {}
+    : Constraint(name), a_(a), b_(b), c_(c),a1_(), b1_(), c1_(), a2_(), b2_(), c2_() {}
 
 Rank1Constraint::Rank1Constraint(const LinearCombination &a,
                                const LinearCombination &b,
                                const LinearCombination &c,
+                               const LinearCombination &a1,
+                               const LinearCombination &b1,
+                               const LinearCombination &c1,
+                               const string& name)
+    : Constraint(name), a_(a), b_(b), c_(c), a1_(a1), b1_(b1), c1_(c1),a2_(), b2_(), c2_() {}
+
+Rank1Constraint::Rank1Constraint(const LinearCombination &a,
+                               const LinearCombination &b,
+                               const LinearCombination &c,
+                               const LinearCombination &a1,
+                               const LinearCombination &b1,
+                               const LinearCombination &c1,
                                const LinearCombination &a2,
                                const LinearCombination &b2,
                                const LinearCombination &c2,
                                const string& name)
-    : Constraint(name), a_(a), b_(b), c_(c), a2_(a2), b2_(b2), c2_(c2) {}
+    : Constraint(name), a_(a), b_(b), c_(c), a1_(a1), b1_(b1), c1_(c1), a2_(a2), b2_(b2), c2_(c2) {}
 
 LinearCombination Rank1Constraint::a() const {return a_;}
 LinearCombination Rank1Constraint::b() const {return b_;}
 LinearCombination Rank1Constraint::c() const {return c_;}
+LinearCombination Rank1Constraint::a1() const {return a1_;}
+LinearCombination Rank1Constraint::b1() const {return b1_;}
+LinearCombination Rank1Constraint::c1() const {return c1_;}
 LinearCombination Rank1Constraint::a2() const {return a2_;}
 LinearCombination Rank1Constraint::b2() const {return b2_;}
 LinearCombination Rank1Constraint::c2() const {return c2_;}

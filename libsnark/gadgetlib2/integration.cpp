@@ -88,7 +88,10 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
                                                                 convert_gadgetlib2_linear_combination(std::get<2>(constr)),
                                                                 convert_gadgetlib2_linear_combination(std::get<3>(constr)),
                                                                 convert_gadgetlib2_linear_combination(std::get<4>(constr)),
-                                                                convert_gadgetlib2_linear_combination(std::get<5>(constr))));
+                                                                convert_gadgetlib2_linear_combination(std::get<5>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<6>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<7>(constr)),
+                                                                convert_gadgetlib2_linear_combination(std::get<8>(constr))));
     }
     //The number of variables is the highest index created.
     //TODO: If there are multiple protoboards, or variables not assigned to a protoboard, then getNextFreeIndex() is *not* the number of variables! See also in get_variable_assignment_from_gadgetlib2.
@@ -97,6 +100,13 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
     result.auxiliary_input_size = num_variables - pb.numInputs();
     result.convol_outputs_size = pb.convol_outputs_size;
     result.convol_size = pb.convol_size;
+    result.convol_outputs_size2 = pb.convol_outputs_size2;
+    result.convol_dimensions = pb.convol_dimensions;
+    result.convol_input_height = pb.convol_input_height;
+    result.convol_input_width = pb.convol_input_width;
+    result.convol_kernel_height = pb.convol_kernel_height;
+    result.convol_kernel_width = pb.convol_kernel_width;
+
     return result;
 }
 

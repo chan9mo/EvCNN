@@ -75,7 +75,7 @@ protected:
 /// where x is an assignment of field elements to the variables.
 class Rank1Constraint : public Constraint {
 private:
-    LinearCombination a_, b_, c_, a2_, b2_, c2_; // <a,x> * <b,x> = <c,x>
+    LinearCombination a_, b_, c_, a1_, b1_, c1_, a2_, b2_, c2_; // <a,x> * <b,x> = <c,x>
 public:
     Rank1Constraint(const LinearCombination& a,
                     const LinearCombination& b,
@@ -85,6 +85,17 @@ public:
     Rank1Constraint(const LinearCombination& a,
                     const LinearCombination& b,
                     const LinearCombination& c,
+                    const LinearCombination& a1,
+                    const LinearCombination& b1,
+                    const LinearCombination& c1,
+                    const ::std::string& name);
+
+    Rank1Constraint(const LinearCombination& a,
+                    const LinearCombination& b,
+                    const LinearCombination& c,
+                    const LinearCombination& a1,
+                    const LinearCombination& b1,
+                    const LinearCombination& c1,
                     const LinearCombination& a2,
                     const LinearCombination& b2,
                     const LinearCombination& c2,
@@ -93,6 +104,9 @@ public:
     LinearCombination a() const;
     LinearCombination b() const;
     LinearCombination c() const;
+    LinearCombination a1() const;
+    LinearCombination b1() const;
+    LinearCombination c1() const;
     LinearCombination a2() const;
     LinearCombination b2() const;
     LinearCombination c2() const;

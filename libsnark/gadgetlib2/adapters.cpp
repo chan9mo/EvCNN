@@ -45,6 +45,9 @@ GLA::constraint_t GLA::convert(const Constraint& constraint) const {
     return constraint_t(convert(rank1_constraint.a()),
         convert(rank1_constraint.b()),
         convert(rank1_constraint.c()),
+        convert(rank1_constraint.a1()),
+        convert(rank1_constraint.b1()),
+        convert(rank1_constraint.c1()),
         convert(rank1_constraint.a2()),
         convert(rank1_constraint.b2()),
         convert(rank1_constraint.c2()));

@@ -47,6 +47,9 @@ public:
                          linear_combination_t,
                          linear_combination_t,
                          linear_combination_t,
+                         linear_combination_t,
+                         linear_combination_t,
+                         linear_combination_t,
                          linear_combination_t
                          > constraint_t;
     /*

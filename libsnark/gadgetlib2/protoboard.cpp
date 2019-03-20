@@ -82,12 +82,26 @@ void Protoboard::addRank1Constraint(const LinearCombination& a,
 void Protoboard::addRank1Constraint(const LinearCombination& a,
                                     const LinearCombination& b,
                                     const LinearCombination& c,
+                                    const LinearCombination& a1,
+                                    const LinearCombination& b1,
+                                    const LinearCombination& c1,
+                                    const ::std::string& name) {
+    constraintSystem_.addConstraint(Rank1Constraint(a,b,c,a1,b1,c1,name));
+}
+
+void Protoboard::addRank1Constraint(const LinearCombination& a,
+                                    const LinearCombination& b,
+                                    const LinearCombination& c,
+                                    const LinearCombination& a1,
+                                    const LinearCombination& b1,
+                                    const LinearCombination& c1,
                                     const LinearCombination& a2,
                                     const LinearCombination& b2,
                                     const LinearCombination& c2,
                                     const ::std::string& name) {
-    constraintSystem_.addConstraint(Rank1Constraint(a,b,c,a2,b2,c2,name));
+    constraintSystem_.addConstraint(Rank1Constraint(a,b,c,a1,b1,c1,a2,b2,c2,name));
 }
+
 
 void Protoboard::addGeneralConstraint(const Polynomial& a,
                                       const Polynomial& b,
