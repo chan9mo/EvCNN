@@ -201,28 +201,28 @@ namespace libsnark {
 			
 			for (size_t i = 0; i < cs.num_constraints(); ++i)
 			{
-				std::cout<<"At\n";
+				//std::cout<<"At\n";
 				for (size_t j = 0; j < cs.constraints[i].a.terms.size(); ++j)
 				{
 					At[cs.constraints[i].a.terms[j].index] +=
 						u[i]*cs.constraints[i].a.terms[j].coeff;
-					std::cout<<"( "<<i<<", "<<cs.constraints[i].a.terms[j].index<<")="<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\n";
+					//std::cout<<"( "<<i<<", "<<cs.constraints[i].a.terms[j].index<<")="<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\n";
 				}
 				//std::cout<<std::endl;
-				std::cout<<"bt\n";
+				//std::cout<<"bt\n";
 				for (size_t j = 0; j < cs.constraints[i].b.terms.size(); ++j)
 				{
 					Bt[cs.constraints[i].b.terms[j].index] +=
 						u[i]*cs.constraints[i].b.terms[j].coeff;
-					std::cout<<"( "<<i<<", "<<cs.constraints[i].b.terms[j].index<<")="<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\n";
+					//std::cout<<"( "<<i<<", "<<cs.constraints[i].b.terms[j].index<<")="<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\n";
 
 				}
-				std::cout<<"Ct\n";
+				//std::cout<<"Ct\n";
 				for (size_t j = 0; j < cs.constraints[i].c.terms.size(); ++j)
 				{
 					Ct[cs.constraints[i].c.terms[j].index] +=
 						u[i]*cs.constraints[i].c.terms[j].coeff;					
-					std::cout<<"( "<<i<<", "<<cs.constraints[i].c.terms[j].index<<")="<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\n";
+					//std::cout<<"( "<<i<<", "<<cs.constraints[i].c.terms[j].index<<")="<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\n";
 
 				}
 				if(cs.convol_dimensions == 2){
@@ -234,7 +234,7 @@ namespace libsnark {
 								FieldT temp2 = FieldT::one();
 								for(size_t m =0;m<(cs.constraints[i].a1.terms.size()-1)/cs.num_convol_input_height();m++){
 									if(cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].index){
-										std::cout<<"( "<<i<<", "<<cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].index<<")="<<cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].coeff.as_ulong()<<"\n";
+										//std::cout<<"( "<<i<<", "<<cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].index<<")="<<cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].coeff.as_ulong()<<"\n";
 									//for(size_t k=0;k<cs.num_convol_outputs();k++){
 										//temp = (FieldT(k+1)^(cs.constraints[i].a1.terms[j].coeff.as_ulong()-1));
 										At[cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].index] +=
@@ -242,12 +242,14 @@ namespace libsnark {
 										//	u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k] * (FieldT(k+1)^cs.constraints[i].a1.terms[j].coeff.as_ulong());
 										
 										//mastd::cout<<"#in : "<<cs.num_inputs()<<" #cons : "<<cs.num_constraints()<<" #convOut : "<<cs.num_convol_outputs()<<" convIndex :"<<conv_index_a<<" k :"<<k<<std::endl;
+										/*
 										std::cout<<"At["<<(cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].index)<<
 											"] = u["<<(cs.num_inputs()+1+cs.num_constraints()) + k*(cs.num_convol_input_width()) + l   <<
 											"]*("<<k+1<<")^"<<cs.constraints[i].a1.terms[j*cs.num_convol_input_width() + m+1].coeff.as_ulong()-1<<"*("<<l+1<<")^"<<cs.constraints[i].a2.terms[j*cs.num_convol_input_width() + m+1].coeff.as_ulong()-1<<
 											"= "<<temp.as_ulong()<<"*"<<temp2.as_ulong()<<"\n";	
-									}
+										*/
 									temp2 *= FieldT(l+1);
+									}
 								}
 								temp *= FieldT(k+1);
 							}
@@ -266,7 +268,7 @@ namespace libsnark {
 								FieldT temp2 = FieldT::one();
 								for(size_t m =0;m<(cs.constraints[i].b1.terms.size()-1)/cs.num_convol_kernel_height();m++){
 									if(cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].index){
-										std::cout<<"( "<<i<<", "<<cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].index<<")="<<cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].coeff.as_ulong()<<"\n";
+										//std::cout<<"( "<<i<<", "<<cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].index<<")="<<cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].coeff.as_ulong()<<"\n";
 									//for(size_t k=0;k<cs.num_convol_outputs();k++){
 										//temp = (FieldT(k+1)^(cs.constraints[i].a1.terms[j].coeff.as_ulong()-1));
 										Bt[cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].index] +=
@@ -274,12 +276,14 @@ namespace libsnark {
 										//	u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k] * (FieldT(k+1)^cs.constraints[i].a1.terms[j].coeff.as_ulong());
 										
 										//mastd::cout<<"#in : "<<cs.num_inputs()<<" #cons : "<<cs.num_constraints()<<" #convOut : "<<cs.num_convol_outputs()<<" convIndex :"<<conv_index_a<<" k :"<<k<<std::endl;
+										/*
 										std::cout<<"Bt["<<(cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].index)<<
 											"] = u["<<(cs.num_inputs()+1+cs.num_constraints()) + k*(cs.num_convol_kernel_width()) + l   <<
 											"]*("<<k+1<<")^"<<cs.constraints[i].b1.terms[j*cs.num_convol_kernel_width() + m+1].coeff.as_ulong()-1<<"*("<<l+1<<")^"<<cs.constraints[i].b2.terms[j*cs.num_convol_kernel_width() + m+1].coeff.as_ulong()-1<<
 											"= "<<temp.as_ulong()<<"*"<<temp2.as_ulong()<<"\n";	
-									}
+										*/
 									temp2 *= FieldT(l+1);
+									}
 								}
 								temp *= FieldT(k+1);
 							}
@@ -296,7 +300,7 @@ namespace libsnark {
 								FieldT temp2 = FieldT::one();
 								for(size_t m =0;m<(cs.constraints[i].c1.terms.size()-1)/cs.num_convol_outputs();m++){
 									if(cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].index){
-										std::cout<<"( "<<i<<", "<<cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].index<<")="<<cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].coeff.as_ulong()<<"\n";
+										//std::cout<<"( "<<i<<", "<<cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].index<<")="<<cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].coeff.as_ulong()<<"\n";
 									//for(size_t k=0;k<cs.num_convol_outputs();k++){
 										//temp = (FieldT(k+1)^(cs.constraints[i].a1.terms[j].coeff.as_ulong()-1));
 										Ct[cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].index] +=
@@ -304,12 +308,14 @@ namespace libsnark {
 										//	u[(cs.num_inputs()+1+cs.num_constraints())+(cs.num_convol_outputs())*(conv_index_a-1)+k] * (FieldT(k+1)^cs.constraints[i].a1.terms[j].coeff.as_ulong());
 										
 										//mastd::cout<<"#in : "<<cs.num_inputs()<<" #cons : "<<cs.num_constraints()<<" #convOut : "<<cs.num_convol_outputs()<<" convIndex :"<<conv_index_a<<" k :"<<k<<std::endl;
+										/*
 										std::cout<<"Ct["<<(cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].index)<<
 											"] = u["<<(cs.num_inputs()+1+cs.num_constraints()) + k*(cs.num_convol_outputs2()) + l   <<
 											"]*("<<k+1<<")^"<<cs.constraints[i].c1.terms[j*cs.num_convol_outputs2() + m+1].coeff.as_ulong()-1<<"*("<<l+1<<")^"<<cs.constraints[i].c2.terms[j*cs.num_convol_outputs2() + m+1].coeff.as_ulong()-1<<
-											"= "<<temp.as_ulong()<<"*"<<temp2.as_ulong()<<"\n";	
-									}
+											"= "<<temp.as_ulong()<<"*"<<temp2.as_ulong()<<"\n";
+										*/
 									temp2 *= FieldT(l+1);
+									}
 								}
 								temp *= FieldT(k+1);
 							}
@@ -482,11 +488,12 @@ namespace libsnark {
 			std::cout<<"#constraint : "<< cs.num_constraints()<<"\t#input : "<< cs.num_inputs()<<"\t#convolOut : "<<(cs.num_convol_outputs())<<"\t#convol : "<<(cs.num_convol())<<std::endl;
 			r1cs_variable_assignment<FieldT> full_variable_assignment = primary_input;
 			full_variable_assignment.insert(full_variable_assignment.end(), auxiliary_input.begin(), auxiliary_input.end());
-
+			/*
 			std::cout<<"variables : ";
 			for(size_t i=0;i<full_variable_assignment.size();i++){
 				std::cout<<full_variable_assignment[i].as_ulong()<<"\t";
 			}
+			*/
 			std::cout<<"\n";
 			std::cout<<"degree : "<<domain->m<<" sum = "<<cs.num_constraints() + cs.num_inputs() + 1 + (cs.num_convol_outputs())*(cs.num_convol()+1)<<"\n";
 
@@ -531,17 +538,18 @@ namespace libsnark {
 									if(cs.constraints[i].a1.terms[l*cs.num_convol_input_width()+m+1].index){
 										acc = full_variable_assignment[cs.constraints[i].a1.terms[l*cs.num_convol_input_width()+m+1].index-1] * temp * temp2;//(FieldT(j)^lt.coeff.as_ulong());
 
+										/*
 										std::cout<<"acc : "<<acc.as_ulong()<<" var["<<cs.constraints[i].a1.terms[l*cs.num_convol_input_width()+m+1].index-1<<"]*("<<
 											j+1<<"^"<<cs.constraints[i].a1.terms[l*cs.num_convol_input_width()+m+1].coeff.as_ulong()-1<<")*("
 											<<k+1<<"^"<<cs.constraints[i].a2.terms[l*cs.num_convol_input_width()+m+1].coeff.as_ulong()-1<<")=("<<
 											temp.as_ulong()<<"*"<<temp2.as_ulong()
 											<<")\n";
-
+										*/
 
 
 
 										aA[(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()] += acc;
-										std::cout<<"aA["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+										//std::cout<<"aA["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
 
 										/*
 										idx++;
@@ -576,17 +584,15 @@ namespace libsnark {
 									if(cs.constraints[i].b1.terms[l*cs.num_convol_kernel_width()+m+1].index){
 										acc = full_variable_assignment[cs.constraints[i].b1.terms[l*cs.num_convol_kernel_width()+m+1].index-1] * temp * temp2;//(FieldT(j)^lt.coeff.as_ulong());
 
+										/*
 										std::cout<<"acc : "<<acc.as_ulong()<<" var["<<cs.constraints[i].b1.terms[l*cs.num_convol_kernel_width()+m+1].index-1<<"]*("<<
 											j+1<<"^"<<cs.constraints[i].b1.terms[l*cs.num_convol_kernel_width()+m+1].coeff.as_ulong()-1<<")*("
 											<<k+1<<"^"<<cs.constraints[i].b2.terms[l*cs.num_convol_kernel_width()+m+1].coeff.as_ulong()-1<<")=("<<
 											temp.as_ulong()<<"*"<<temp2.as_ulong()
 											<<")\n";
-
-
-
-
+										*/
 										aB[(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()] += acc;
-										std::cout<<"aB["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+										//std::cout<<"aB["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
 										/*
 										idx++;
 										if(idx == cs.num_convol_kernel_width()){
@@ -785,22 +791,22 @@ namespace libsnark {
 							for(size_t l=0;l<(cs.constraints[i].c1.terms.size()-1)/cs.num_convol_outputs2();l++){
 								FieldT temp2 = FieldT::one();
 								for(size_t m=0;m<(cs.constraints[i].c1.terms.size()-1)/cs.num_convol_outputs();m++){
-									std::cout<<l<<", "<<m<<" : "<<l*cs.num_convol_outputs2()+m<<std::endl;
+									//std::cout<<l<<", "<<m<<" : "<<l*cs.num_convol_outputs2()+m<<std::endl;
 									if(cs.constraints[i].c1.terms[l*cs.num_convol_outputs2()+m+1].index){
 										
 										acc = full_variable_assignment[cs.constraints[i].c1.terms[l*cs.num_convol_outputs2()+m+1].index-1] * temp * temp2;//(FieldT(j)^lt.coeff.as_ulong());
-
+										/*
 										std::cout<<"acc : "<<acc.as_ulong()<<" var["<<cs.constraints[i].c1.terms[l*cs.num_convol_outputs2()+m+1].index-1<<"]*("<<
 											j+1<<"^"<<cs.constraints[i].c1.terms[l*cs.num_convol_outputs2()+m+1].coeff.as_ulong()-1<<")*("
 											<<k+1<<"^"<<cs.constraints[i].c2.terms[l*cs.num_convol_outputs2()+m+1].coeff.as_ulong()-1<<")=("<<
 											temp.as_ulong()<<"*"<<temp2.as_ulong()
 											<<")\n";
-
+										*/
 
 
 
 										aC[(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()] += acc;
-										std::cout<<"aC["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+										//std::cout<<"aC["<<(j)*cs.num_convol_outputs2() + k+1+ cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
 
 										/*
 										std::cout<<"idx : "<<idx<<std::endl;
@@ -822,29 +828,29 @@ namespace libsnark {
 					}
 				}
 				else{
-				bool flag = false;
-				for(size_t j=1;j<=cs.num_convol_outputs();j++){
-					
-					FieldT temp = FieldT::one();
-					for(auto &lt : cs.constraints[i].c1){
-						if(lt.index){
-						if(!flag){ 
-							conv_index++;
-							flag = true;
-						}
-						//temp = (FieldT(j)^(lt.coeff.as_ulong()-1));
-						acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
-						///TODO lt.index break when output is not used to sequentially   
-						//acc = full_variable_assignment[lt.index-1] * (FieldT(j)^lt.coeff.as_ulong());
-						//std::cout<<j<<"^"<<lt.coeff.as_ulong()<<" = "<<temp.as_ulong()<<std::endl;
+					bool flag = false;
+					for(size_t j=1;j<=cs.num_convol_outputs();j++){
+						
+						FieldT temp = FieldT::one();
+						for(auto &lt : cs.constraints[i].c1){
+							if(lt.index){
+							if(!flag){ 
+								conv_index++;
+								flag = true;
+							}
+							//temp = (FieldT(j)^(lt.coeff.as_ulong()-1));
+							acc = full_variable_assignment[lt.index-1] * temp;//(FieldT(j)^lt.coeff.as_ulong());
+							///TODO lt.index break when output is not used to sequentially   
+							//acc = full_variable_assignment[lt.index-1] * (FieldT(j)^lt.coeff.as_ulong());
+							//std::cout<<j<<"^"<<lt.coeff.as_ulong()<<" = "<<temp.as_ulong()<<std::endl;
 
-						temp *= FieldT(j);
-						aC[(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
-						//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
-						//std::cout<<"aC["<<(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+							temp *= FieldT(j);
+							aC[(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()] += acc;
+							//std::cout<<"acc : "<<acc.as_ulong()<<" var["<<lt.index-1<<"]*("<<j<<"^"<<lt.coeff.as_ulong()<<")\n";
+							//std::cout<<"aC["<<(j)+(conv_index-1)*cs.num_convol_outputs() + cs.num_constraints() + cs.num_inputs()<<"] = acc\n";
+							}
 						}
 					}
-				}
 				/*
 				for(auto &lt : cs.constraints[i].c1){
 					if(!flag){

@@ -126,12 +126,13 @@ r1cs_variable_assignment<libff::Fr<libff::default_ec_pp> > get_variable_assignme
     for(VariableAssignment::iterator iter = assignment.begin(); iter != assignment.end(); ++iter){
     	result[GLA::getVariableIndex(iter->first)] = adapter.convert(iter->second);
     }
-
+    
     std::cout<<"var gadget : ";
     for(size_t i=0;i<result.size();i++){
         std::cout<<result[i].as_ulong()<<"\t";
     }
     std::cout<<std::endl;
+    
 
     return result;
 }
