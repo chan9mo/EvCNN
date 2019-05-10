@@ -149,32 +149,31 @@ class r1cs_constraint_system {
 public:
     size_t primary_input_size;
     size_t auxiliary_input_size;
-    size_t convol_outputs_size;
-    size_t convol_outputs_size2;
-    size_t convol_outputs_size3;
-    size_t convol_size;
-    size_t convol_input_height;
-    size_t convol_input_width;
-    size_t convol_kernel_height;
-    size_t convol_kernel_width;
-    size_t convol_dimensions;
+    std::vector<size_t> convol_outputs_size;
+    std::vector<size_t> convol_outputs_size2;
+    size_t num_convol;
+    std::vector<size_t> convol_input_height;
+    std::vector<size_t> convol_input_width;
+    std::vector<size_t> convol_kernel_height;
+    std::vector<size_t> convol_kernel_width;
+    std::vector<size_t> convol_dimensions;
 
     std::vector<r1cs_constraint<FieldT> > constraints;
 
     r1cs_constraint_system() : primary_input_size(0), auxiliary_input_size(0),
-    convol_outputs_size(0), convol_size(0) {}
+    convol_outputs_size(0), num_convol(0) {}
 
     size_t num_inputs() const;
     size_t num_variables() const;
     size_t num_constraints() const;
-    size_t num_convol() const;
-    size_t num_convol_outputs() const;
-    size_t num_convol_outputs2() const;
-    size_t num_convol_input_height() const;
-    size_t num_convol_input_width() const;
-    size_t num_convol_kernel_height() const;
-    size_t num_convol_kernel_width() const;
-    size_t num_convol_dimensions() const;
+    //size_t num_convol();
+    size_t num_convol_outputs(int num) const;
+    size_t num_convol_outputs2(int num) const;
+    size_t num_convol_input_height(int num) const;
+    size_t num_convol_input_width(int num) const;
+    size_t num_convol_kernel_height(int num) const;
+    size_t num_convol_kernel_width(int num) const;
+    size_t num_convol_dimensions(int num) const;
 
 #ifdef DEBUG
     std::map<size_t, std::string> constraint_annotations;

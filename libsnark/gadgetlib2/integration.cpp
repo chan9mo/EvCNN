@@ -98,14 +98,16 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
     const size_t num_variables = GLA::getNextFreeIndex();
     result.primary_input_size = pb.numInputs();
     result.auxiliary_input_size = num_variables - pb.numInputs();
-    result.convol_outputs_size = pb.convol_outputs_size;
-    result.convol_size = pb.convol_size;
-    result.convol_outputs_size2 = pb.convol_outputs_size2;
-    result.convol_dimensions = pb.convol_dimensions;
-    result.convol_input_height = pb.convol_input_height;
-    result.convol_input_width = pb.convol_input_width;
-    result.convol_kernel_height = pb.convol_kernel_height;
-    result.convol_kernel_width = pb.convol_kernel_width;
+    for(size_t i=0;i<pb.convol_size;i++){
+        result.convol_outputs_size.insert(result.convol_outputs_size.end(), pb.convol_outputs_size[i]);
+        result.convol_outputs_size2.insert(result.convol_outputs_size2.end(), pb.convol_outputs_size2[i]);
+        result.convol_dimensions.insert(result.convol_dimensions.end(), pb.convol_dimensions[i]);
+        result.convol_input_height.insert(result.convol_input_height.end(), pb.convol_input_height[i]);
+        result.convol_input_width.insert(result.convol_input_width.end(), pb.convol_input_width[i]);
+        result.convol_kernel_height.insert(result.convol_kernel_height.end(), pb.convol_kernel_height[i]);
+        result.convol_kernel_width.insert(result.convol_kernel_width.end(), pb.convol_kernel_width[i]);
+    }
+    result.num_convol = pb.convol_size;
 
     return result;
 }
@@ -127,11 +129,12 @@ r1cs_variable_assignment<libff::Fr<libff::default_ec_pp> > get_variable_assignme
     	result[GLA::getVariableIndex(iter->first)] = adapter.convert(iter->second);
     }
     
-    std::cout<<"var gadget : ";
-    for(size_t i=0;i<result.size();i++){
-        std::cout<<result[i].as_ulong()<<"\t";
-    }
-    std::cout<<std::endl;
+//    std::cout<<"var gadget : ";
+//    for(size_t i=0;i<result.size();i++){
+//        //result[i].print3();
+//        std::cout<<result[i].as_ulong()<<"\t";
+//    }
+//    std::cout<<std::endl;
     
 
     return result;

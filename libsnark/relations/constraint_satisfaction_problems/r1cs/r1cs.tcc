@@ -229,52 +229,53 @@ size_t r1cs_constraint_system<FieldT>::num_constraints() const
 {
     return constraints.size();
 }
-
+/*
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol() const
+size_t r1cs_constraint_system<FieldT>::num_convol()
 {
     return convol_size;
 }
+*/
 
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_outputs() const
+size_t r1cs_constraint_system<FieldT>::num_convol_outputs(int num) const
 {
-    return convol_outputs_size;
+    return convol_outputs_size[num];
 }
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_outputs2() const
+size_t r1cs_constraint_system<FieldT>::num_convol_outputs2(int num) const
 {
-    return convol_outputs_size2;
-}
-
-template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_input_height() const
-{
-    return convol_input_height;
+    return convol_outputs_size2[num];
 }
 
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_input_width() const
+size_t r1cs_constraint_system<FieldT>::num_convol_input_height(int num) const
 {
-    return convol_input_width;
+    return convol_input_height[num];
 }
 
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_kernel_height() const
+size_t r1cs_constraint_system<FieldT>::num_convol_input_width(int num) const
 {
-    return convol_kernel_height;
+    return convol_input_width[num];
 }
 
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_kernel_width() const
+size_t r1cs_constraint_system<FieldT>::num_convol_kernel_height(int num) const
 {
-    return convol_kernel_width;
+    return convol_kernel_height[num];
 }
 
 template<typename FieldT>
-size_t r1cs_constraint_system<FieldT>::num_convol_dimensions() const
+size_t r1cs_constraint_system<FieldT>::num_convol_kernel_width(int num) const
 {
-    return convol_dimensions;
+    return convol_kernel_width[num];
+}
+
+template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_convol_dimensions(int num) const
+{
+    return convol_dimensions[num];
 }
 
 template<typename FieldT>
@@ -498,7 +499,7 @@ void r1cs_constraint_system<FieldT>::add_convol_constraint(const size_t num_inpu
 	}
 
     convol_outputs_size = num_kernels+num_inputs-1;//num_outputs;
-    convol_size++;
+    num_convol++;
 
     constraints.emplace_back(r1cs_constraint<FieldT>(A, B, C, A1, B1, C1));
 }

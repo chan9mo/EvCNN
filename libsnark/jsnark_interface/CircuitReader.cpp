@@ -56,7 +56,7 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 				iss_i >> value;
 
 				wireValues[wireId] = FieldT(value);//readFieldElementFromHex(inputStr);
-				std::cout<<"wireValues["<<wireId<<"] = "<<wireValues[wireId].as_ulong()<<std::endl;
+				//std::cout<<"wireValues["<<wireId<<"] = "<<wireValues[wireId].as_ulong()<<std::endl;
 			} else {
 				printf("Error in Input\n");
 				exit(-1);
@@ -77,8 +77,20 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 	FieldT oneElement = FieldT::one();
 	FieldT zeroElement = FieldT::zero();
 	FieldT negOneElement = FieldT(-1);
+	FieldT inverse4 = FieldT(4).inverse();
+	FieldT inverse2 = FieldT(2).inverse();
+	std::cout<<"inv4 : ";
+	inverse4.print3();
+	std::cout<<"\ninv2 : ";
+	inverse2.print();	
+
 
 	std::cout<<"-1 : "<<negOneElement.as_ulong()<<std::endl;
+	negOneElement.print();
+	//std::cout<<"4^-1 : "<<inverse4.as_ulong()<<std::endl;
+	//inverse4.print();
+	//std::cout<<"200("<<FieldT(200).as_ulong()<<") * "<<"4^-1("<<inverse4.as_ulong()<<") = "<<(inverse4*FieldT(200)).as_ulong()<<std::endl;
+
 
 	long long evalTime;
 	long long begin, end;
@@ -110,7 +122,7 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 						&numGateInputs, inputStr, &numGateOutputs, outputStr, &numStates, stateStr) ){
 
 			
-			std::cout<<"convol 2d 3~~~~\n";
+			//std::cout<<"convol 2d 3~~~~\n";
 			istringstream iss_i(inputStr, istringstream::in);
 			std::vector<FieldT> inValues;
 			std::vector<Wire> outWires;
@@ -125,7 +137,7 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 			short opcode;
 			FieldT constant;
 			if(strcmp(type,"convol") == 0 && numStates == 4){
-				std::cout<<"convol 2d 2\n";
+				//std::cout<<"convol 2d 2\n";
 				opcode = CONVOL2D_OPCODE;
 
 				istringstream iss_st(stateStr, istringstream::in);
@@ -144,24 +156,26 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 										if((w+k1) == j && (h+k2) == k)
 										{
 											//std::cout<<"w,h,k1,k2 = "<<w<<h<<k1<<k2<<std::endl;
-											std::cout<<"k["<<k1<<"*"<<kernelHeight<<"+"<<k2<<"]("<<(inValues[k1*(kernelHeight)+k2]).as_ulong()<<")"
-											"*x["<<w<<"*"<<inputHeight<<"+"<<h<<"]("<<(inValues[(w*inputHeight+h)]).as_ulong()<<") = "<<
-											(inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)]).as_ulong()<<"\t";
+											//std::cout<<"k["<<k1<<"*"<<kernelHeight<<"+"<<k2<<"]("<<(inValues[k1*(kernelHeight)+k2]).as_ulong()<<")"
+											//"*x["<<w<<"*"<<inputHeight<<"+"<<h<<"]("<<(inValues[(w*inputHeight+h)]).as_ulong()<<") = "<<
+											//(inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)]).as_ulong()<<"\t";
 											y += inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)];
 										}
 									}
 								}
 							}
 						}
-						std::cout<<"outwire["<<j*(inputHeight+kernelHeight-1) + k<<"] ="<<y.as_ulong()<<"\n";
+						//std::cout<<"outwire["<<j*(inputHeight+kernelHeight-1) + k<<"] ="<<y.as_ulong()<<"\n";
 						wireValues[outWires[j*(inputHeight+kernelHeight-1) + k]] = y;
 					}
 				}
+				/*
 				for(size_t i=0;i<(inputWidth+kernelWidth-1);i++){
 					for(size_t j=0;j<(inputHeight+kernelHeight-1);j++)
 						std::cout<<outWires[i*(inputHeight+kernelHeight-1) + j]<<"\t";
 				}
 				std::cout<<std::endl;	
+				*/
 			}
 		}
 		else if (5
@@ -253,6 +267,8 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 				}
 			} else if (opcode == MULCONST_OPCODE) {
 				wireValues[outWires[0]] = constant * inValues[0];
+				//std::cout<<FieldT("16416182153879456416684804308942956316411273300312025757773653139931856371713").as_ulong()<<"*"<<FieldT(4).as_ulong()<<"="<<(FieldT(4)*FieldT("16416182153879456416684804308942956316411273300312025757773653139931856371713")).as_ulong()<<std::endl;
+				//std::cout<<"Hex "<<readFieldElementFromHex("244B3AD628E5381F4A3C3448E1210245DE26EE365B4B146CF2E9782EF4000001").as_ulong()<<"*"<<FieldT(4).as_ulong()<<"="<<(FieldT(4)*readFieldElementFromHex("244B3AD628E5381F4A3C3448E1210245DE26EE365B4B146CF2E9782EF4000001")).as_ulong()<<std::endl;
 			} else if(opcode == CONVOL_OPCODE){
 				size_t num_in = inValues[0].as_ulong();
 				size_t num_ker = inValues[num_in+1].as_ulong();
@@ -261,19 +277,22 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 					for(size_t k=0;k<num_in;k++){
 						for(size_t l=0;l<num_ker;l++){
 							if((k+l)==i){
-								std::cout<<"["<<k<<"]["<<l<<"]("<<(inValues[k+1]*inValues[1+num_in+1+l]).as_ulong()<<")";
+								//std::cout<<"["<<k<<"]["<<l<<"]("<<(inValues[k+1]*inValues[1+num_in+1+l]).as_ulong()<<")";
 								y += inValues[k+1] * inValues[1+num_in+l+1];
 							}
 						}
 					}
-					std::cout<<y.as_ulong()<<"\t";
+					//std::cout<<y.as_ulong()<<"\t";
 					wireValues[outWires[i]] = y;
 				}
+				/*
 				std::cout<<std::endl;
 				for(size_t i=0;i<num_in+num_ker-1;i++){
 					std::cout<<outWires[i]<<"\t";
 				}
 				std::cout<<std::endl;
+
+				*/
 			}
 			
 			
@@ -361,19 +380,23 @@ void CircuitReader::constructCircuit(char* arithFilepath) {
 		stateStr = new char[line.size()];
 		if (7 == sscanf(line.c_str(), "%s in %d <%[^>]> out %d <%[^>]> state %d <%[^>]>", type,
 						&numGateInputs, inputStr, &numGateOutputs, outputStr, &numStates, stateStr)){
+			/*
 			std::cout<<"################"<<"\ntype : "<<type<<"\n#in : "<<numGateInputs<<"\ninStr : "<<inputStr
 			<<"\n#Out : "<<numGateOutputs<<"\noutStr : "<<outputStr<<"\n#state : "<<numStates<<"\nstStr : "<<stateStr
 			<<"\n###################"<<std::endl;
+			*/
 			if(strstr(type, "convol") && numStates == 4){
-				std::cout<<"ok convol2d\n"<<stateStr<<std::endl;
+				//std::cout<<"ok convol2d\n"<<stateStr<<std::endl;
 				addConvol2DConstraint(inputStr, outputStr, stateStr, numGateInputs, numGateOutputs, numStates);
 			}
 		}
 		else if (5 == sscanf(line.c_str(), "%s in %d <%[^>]> out %d <%[^>]>", type,
 						&numGateInputs, inputStr, &numGateOutputs, outputStr)) {
+			/*
 			std::cout<<"################"<<"\ntype : "<<type<<"\n#in : "<<numGateInputs<<"\ninStr : "<<inputStr
 			<<"\n#Out : "<<numGateOutputs<<"\noutStr : "<<outputStr
 			<<"\n###################"<<std::endl;
+			*/
 			if (strcmp(type, "add") == 0) {
 				assert(numGateOutputs == 1);
 				handleAddition(inputStr, outputStr);
@@ -498,17 +521,17 @@ void CircuitReader::clean() {
 void CircuitReader::addMulConstraint(char* inputStr, char* outputStr) {
 
 	Wire outputWireId, inWireId1, inWireId2;
-	std::cout<<inputStr<<std::endl;
+	//std::cout<<inputStr<<std::endl;
 
 	istringstream iss_i(inputStr, istringstream::in);
 	iss_i >> inWireId1;
-	std::cout<<inWireId1<<std::endl;
+	//std::cout<<inWireId1<<std::endl;
 	iss_i >> inWireId2;
-	std::cout<<inWireId2<<std::endl;
+	//std::cout<<inWireId2<<std::endl;
 
 	istringstream iss_o(outputStr, istringstream::in);
 	iss_o >> outputWireId;
-	std::cout<<outputWireId<<std::endl;
+	//std::cout<<outputWireId<<std::endl;
 
 
 
@@ -516,12 +539,12 @@ void CircuitReader::addMulConstraint(char* inputStr, char* outputStr) {
 	find(inWireId1, l1);
 	find(inWireId2, l2);
 
-	std::cout<<"l1 : "<<(*l1).asString()<<std::endl;
+	//std::cout<<"l1 : "<<(*l1).asString()<<std::endl;
 
 	if (variableMap.find(outputWireId) == variableMap.end()) {
 		variables.push_back(make_shared<Variable>("mul out"));
 		variableMap[outputWireId] = currentVariableIdx;
-		std::cout<<currentVariableIdx<<std::endl;
+		//std::cout<<currentVariableIdx<<std::endl;
 
 		pb->addRank1Constraint(*l1, *l2, *variables[currentVariableIdx],
 				"Mul ..");
@@ -530,7 +553,7 @@ void CircuitReader::addMulConstraint(char* inputStr, char* outputStr) {
 		pb->addRank1Constraint(*l1, *l2, *variables[variableMap[outputWireId]],
 				"Mul ..");
 	}
-	std::cout<<"ok mul\n";
+	//std::cout<<"ok mul\n";
 }
 
 void CircuitReader::addXorConstraint(char* inputStr, char* outputStr) {
@@ -759,8 +782,11 @@ void CircuitReader::handleMulConst(char* type, char* inputStr,
 	LinearCombinationPtr l;
 	find(inWireId, l, true);
 	wireLinearCombinations[outputWireId] = l;
+	//std::cout<<"id : "<<outputWireId<<" value : "<< wireValues[outputWireId].as_ulong()<<std::endl;
 	*(wireLinearCombinations[outputWireId]) *= readFieldElementFromHex(
 			constStr);
+	//std::cout<<"const : "<<readFieldElementFromHex(
+	//		constStr).as_ulong()<<std::endl;
 }
 
 void CircuitReader::handleMulNegConst(char* type, char* inputStr,
@@ -806,7 +832,7 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 	input_lc = temp_lc;
 	for(size_t i=0; i<num-1;i++){
 		iss_i >> wireTemp;
-		std::cout<<"input id : "<<wireTemp<<std::endl;
+		//std::cout<<"input id : "<<wireTemp<<std::endl;
 
 		find(wireTemp, temp_lc);
 		*input_lc += (*temp_lc)*(i+2);
@@ -832,7 +858,7 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 		*kernel_lc += (*temp_lc2)*(i+2);
 		//kernelIds.push_back(wireTemp);
 	}
-	std::cout<<"id2 : "<<inWireId2<<"\nkernel size : "<<num<<std::endl;;
+	//std::cout<<"id2 : "<<inWireId2<<"\nkernel size : "<<num<<std::endl;;
 	
 	istringstream iss_o(outputStr, istringstream::in);
 	//iss_o >> outputWireId;
@@ -842,9 +868,9 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 	LinearCombinationPtr output_lc;//, temp_lc3;
 	//VariablePtr output_v;
 	iss_o >> wireTemp;
-	std::cout<<wireTemp<<std::endl;
+	//std::cout<<wireTemp<<std::endl;
 
-	std::cout<<"curIdx : "<<currentVariableIdx<<"\n";
+	//std::cout<<"curIdx : "<<currentVariableIdx<<"\n";
 	//find(wireTemp, temp_lc3, true);
 	//output_lc = temp_lc3;
 	if (variableMap.find(wireTemp) == variableMap.end()) {
@@ -858,14 +884,14 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 		//std::cout<<currentVariableIdx<<std::endl;
 		//output_v = variables[currentVariableIdx];
 		output_lc = make_shared<LinearCombination>(LinearCombination(*variables[currentVariableIdx]));
-		std::cout<<"out = cv["<<currentVariableIdx<<"]";
+		//std::cout<<"out = cv["<<currentVariableIdx<<"]";
 		currentVariableIdx++;
 	} else {
 		//std::cout<<"2"<<std::endl;
 
 		//output_v = variables[variableMap[outputWireId]];
 		output_lc = make_shared<LinearCombination>(LinearCombination(*variables[variableMap[wireTemp]]));
-		std::cout<<"out = v["<<variableMap[wireTemp]<<"]";
+		//std::cout<<"out = v["<<variableMap[wireTemp]<<"]";
 		//output_lc = *variables[variableMap[outputWireId]];
 	}
 	//std::cout<<"first ok"<<std::endl;
@@ -881,18 +907,18 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 			//std::cout<<currentVariableIdx<<std::endl;
 			//output_v = variables[currentVariableIdx];
 			*output_lc += (*variables[currentVariableIdx])*(i+2);
-			cout<<"+cv["<<currentVariableIdx<<"]";
+			//cout<<"+cv["<<currentVariableIdx<<"]";
 			currentVariableIdx++;
 		} else {
 			*output_lc += (*variables[variableMap[wireTemp]])*(i+2);
-			cout<<"+v["<<variableMap[wireTemp]<<"]";
+			//cout<<"+v["<<variableMap[wireTemp]<<"]";
 		}
 	}
-	std::cout<<wireTemp<<std::endl;
+	//std::cout<<wireTemp<<std::endl;
 
-	std::cout<<"output size : "<<num_out<<std::endl;;
+	//std::cout<<"output size : "<<num_out<<std::endl;;
 
-	pb->convol_outputs_size = num_out;
+	pb->convol_outputs_size.insert(pb->convol_outputs_size.end(),num_out);
 	pb->convol_size++;
 	LinearCombination dum1, dum2, dum3;
 	pb->addRank1Constraint(dum1, dum2, dum3, *input_lc, *kernel_lc, *output_lc,"Convol ..");
@@ -902,8 +928,8 @@ void CircuitReader::addConvol1DConstraint(char* inputStr, char* outputStr, unsig
 void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char* stateStr, unsigned short num_in, unsigned short num_out, unsigned short num_state) {
 
 	//Wire inputHeightW, inputWidthW, kernelHeightW, kernelWidthW;
-	std::cout<<"ok2d\n";
-	std::cout<<stateStr<<std::endl;
+	//std::cout<<"ok2d\n";
+	//std::cout<<stateStr<<std::endl;
 	size_t inputHeight, inputWidth, kernelHeight, kernelWidth;
 	istringstream iss_st(stateStr, istringstream::in);
 	iss_st >> inputHeight;
@@ -911,7 +937,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 	iss_st >> kernelHeight;
 	iss_st >> kernelWidth;
 
-	std::cout<<"in height : "<<inputHeight<<" width : "<<inputWidth<<" kernel : "<<kernelHeight<<" width :"<<kernelWidth<<std::endl;
+	//std::cout<<"in height : "<<inputHeight<<" width : "<<inputWidth<<" kernel : "<<kernelHeight<<" width :"<<kernelWidth<<std::endl;
 
 	istringstream iss_i(inputStr, istringstream::in);
 
@@ -927,7 +953,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 				;
 			}else{
 			iss_i >> wireTemp;
-			std::cout<<"input id : "<<wireTemp<<" : "<<variableMap[wireTemp]<<std::endl;
+			//std::cout<<"input id : "<<wireTemp<<" : "<<variableMap[wireTemp]<<std::endl;
 
 			find(wireTemp, temp_lcH);
 			temp_lcW = make_shared<LinearCombination>(*temp_lcH);
@@ -947,7 +973,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 			if(i==0 && j==0) {;}
 			else{
 			iss_i >> wireTemp;
-			std::cout<<"kernel id : "<<wireTemp<<std::endl;
+			//std::cout<<"kernel id : "<<wireTemp<<std::endl;
 
 			find(wireTemp, temp_lcH);
 			temp_lcW = make_shared<LinearCombination>(*temp_lcH);
@@ -962,7 +988,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 	LinearCombinationPtr output_lcW, output_lcH;
 	iss_o >> wireTemp;
 
-	std::cout<<"curIdx : "<<currentVariableIdx<<"\n";
+	//std::cout<<"curIdx : "<<currentVariableIdx<<"\n";
 
 	if (variableMap.find(wireTemp) == variableMap.end()) {
 
@@ -971,7 +997,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 		variableMap[wireTemp] = currentVariableIdx;
 		output_lcH = make_shared<LinearCombination>(LinearCombination(*variables[currentVariableIdx]));
 		output_lcW = make_shared<LinearCombination>(LinearCombination(*variables[currentVariableIdx]));
-		std::cout<<"out = cv["<<currentVariableIdx<<"]";
+		//std::cout<<"out = cv["<<currentVariableIdx<<"]";
 		currentVariableIdx++;
 	} else {
 		//std::cout<<"2"<<std::endl;
@@ -980,7 +1006,7 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 		output_lcW = make_shared<LinearCombination>(LinearCombination(*variables[variableMap[wireTemp]]));
 		output_lcH = make_shared<LinearCombination>(LinearCombination(*variables[variableMap[wireTemp]]));
 
-		std::cout<<"out = v["<<variableMap[wireTemp]<<"]";
+		//std::cout<<"out = v["<<variableMap[wireTemp]<<"]";
 		//output_lc = *variables[variableMap[outputWireId]];
 	}
 
@@ -996,30 +1022,30 @@ void CircuitReader::addConvol2DConstraint(char* inputStr, char* outputStr, char*
 					variableMap[wireTemp] = currentVariableIdx;
 					*output_lcH += (*variables[currentVariableIdx])*(i+1);
 					*output_lcW += (*(make_shared<Variable>(*variables[currentVariableIdx])))*(j+1);
-					cout<<"+cv["<<currentVariableIdx<<"]";
+					//cout<<"+cv["<<currentVariableIdx<<"]";
 					currentVariableIdx++;
 				} else {
 					*output_lcH += (*variables[variableMap[wireTemp]])*(i+1);
 					*output_lcW += (*(make_shared<Variable>(*variables[variableMap[wireTemp]])))*(j+1);
 
-					cout<<"+v["<<variableMap[wireTemp]<<"]";
+					//cout<<"+v["<<variableMap[wireTemp]<<"]";
 				}
 			}
 			
 		}
 	}
 
-	std::cout<<"output size : "<<outputHeight*outputWidth<<std::endl;;
+	//std::cout<<"output size : "<<outputHeight*outputWidth<<std::endl;;
 
-	pb->convol_outputs_size = inputHeight + kernelHeight-1;
-	pb->convol_outputs_size2 = inputWidth + kernelWidth -1;
+	pb->convol_outputs_size.insert(pb->convol_outputs_size.end(), inputHeight + kernelHeight-1);
+	pb->convol_outputs_size2.insert(pb->convol_outputs_size2.end(), inputWidth + kernelWidth -1);
 
-	pb->convol_input_height = inputHeight;
-	pb->convol_input_width = inputWidth;
-	pb->convol_kernel_height = kernelHeight;
-	pb->convol_kernel_width = kernelWidth;
+	pb->convol_input_height.insert(pb->convol_input_height.end(),inputHeight);
+	pb->convol_input_width.insert(pb->convol_input_width.end(),inputWidth);
+	pb->convol_kernel_height.insert(pb->convol_kernel_height.end(),kernelHeight);
+	pb->convol_kernel_width.insert(pb->convol_kernel_width.end(),kernelWidth);
 
-	pb->convol_dimensions = 2;
+	pb->convol_dimensions.insert(pb->convol_dimensions.end(),2);
 	pb->convol_size++;
 	LinearCombination dum1, dum2, dum3;
 	pb->addRank1Constraint(dum1, dum2, dum3, *input_lcH, *kernel_lcH, *output_lcH, *input_lcW, *kernel_lcW, *output_lcW,"Convol2D ..");
@@ -1047,7 +1073,7 @@ void CircuitReader::addConvolConstraint(char* inputStr, char* outputStr, unsigne
 	input_lc = temp_lc;
 	for(size_t i=0; i<num-1;i++){
 		iss_i >> wireTemp;
-		std::cout<<"input id : "<<wireTemp<<std::endl;
+		//std::cout<<"input id : "<<wireTemp<<std::endl;
 
 		find(wireTemp, temp_lc);
 		*input_lc += (*temp_lc)*(i+2);
@@ -1073,7 +1099,7 @@ void CircuitReader::addConvolConstraint(char* inputStr, char* outputStr, unsigne
 		*kernel_lc += (*temp_lc2)*(i+2);
 		//kernelIds.push_back(wireTemp);
 	}
-	std::cout<<"id2 : "<<inWireId2<<"\nkernel size : "<<num<<std::endl;;
+	//std::cout<<"id2 : "<<inWireId2<<"\nkernel size : "<<num<<std::endl;;
 	
 	istringstream iss_o(outputStr, istringstream::in);
 	//iss_o >> outputWireId;
@@ -1083,7 +1109,7 @@ void CircuitReader::addConvolConstraint(char* inputStr, char* outputStr, unsigne
 	LinearCombinationPtr output_lc;//, temp_lc3;
 	//VariablePtr output_v;
 	iss_o >> wireTemp;
-	std::cout<<wireTemp<<std::endl;
+	//std::cout<<wireTemp<<std::endl;
 
 	//find(wireTemp, temp_lc3, true);
 	//output_lc = temp_lc3;
@@ -1132,7 +1158,7 @@ void CircuitReader::addConvolConstraint(char* inputStr, char* outputStr, unsigne
 
 	//std::cout<<"output size : "<<num_out<<std::endl;;
 
-	pb->convol_outputs_size = num_out;
+	pb->convol_outputs_size.insert(pb->convol_outputs_size.end(),num_out);
 	pb->convol_size++;
 	LinearCombination dum1, dum2, dum3;
 	pb->addRank1Constraint(dum1, dum2, dum3, *input_lc, *kernel_lc, *output_lc,"Convol ..");

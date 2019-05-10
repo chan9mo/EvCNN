@@ -52,17 +52,16 @@ public:
         return ProtoboardPtr(new Protoboard(fieldType, pParams));
     }
 
-    size_t convol_outputs_size;
-    size_t convol_outputs_size2;
-    size_t convol_outputs_size3;
+    std::vector<size_t> convol_outputs_size;
+     std::vector<size_t> convol_outputs_size2;
 
-    size_t convol_input_height;
-    size_t convol_input_width;
-    size_t convol_kernel_height;
-    size_t convol_kernel_width;
+     std::vector<size_t> convol_input_height;
+     std::vector<size_t> convol_input_width;
+     std::vector<size_t> convol_kernel_height;
+     std::vector<size_t> convol_kernel_width;
 
     size_t convol_size;
-    size_t convol_dimensions;
+     std::vector<size_t> convol_dimensions;
 
     size_t numVars() const {return assignment_.size();} // TODO change to take num from constraintSys_
     //size_t numVars() const {return constraintSystem_.getUsedVariables().size();} // TODO change to take num from constraintSys_
