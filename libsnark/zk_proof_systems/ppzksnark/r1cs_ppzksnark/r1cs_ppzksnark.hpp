@@ -81,7 +81,7 @@ public:
     libff::G1_vector<ppT> K_query;
 
     r1cs_ppzksnark_constraint_system<ppT> constraint_system;
-    r1cs_ppzksnark_constraint_convol_system<ppT> constraint_convol_system;
+    //r1cs_ppzksnark_constraint_convol_system<ppT> constraint_convol_system;
 
     r1cs_ppzksnark_proving_key() {};
     r1cs_ppzksnark_proving_key<ppT>& operator=(const r1cs_ppzksnark_proving_key<ppT> &other) = default;
@@ -100,20 +100,21 @@ public:
         K_query(std::move(K_query)),
         constraint_system(std::move(constraint_system))
     {};
-
+    /*
     r1cs_ppzksnark_proving_key(knowledge_commitment_vector<libff::G1<ppT>, libff::G1<ppT> > &&A_query,
                                knowledge_commitment_vector<libff::G2<ppT>, libff::G1<ppT> > &&B_query,
                                knowledge_commitment_vector<libff::G1<ppT>, libff::G1<ppT> > &&C_query,
                                libff::G1_vector<ppT> &&H_query,
                                libff::G1_vector<ppT> &&K_query,
-                               r1cs_ppzksnark_constraint_convol_system<ppT> &&constraint_convol_system) :
+                               r1cs_ppzksnark_constraint_system<ppT> &&constraint_system) :
         A_query(std::move(A_query)),
         B_query(std::move(B_query)),
         C_query(std::move(C_query)),
         H_query(std::move(H_query)),
         K_query(std::move(K_query)),
-        constraint_convol_system(std::move(constraint_convol_system))
+        constraint_system(std::move(constraint_system))
     {};
+    */
 
     size_t G1_size() const
     {
@@ -489,7 +490,7 @@ bool r1cs_ppzksnark_affine_verifier_weak_IC(const r1cs_ppzksnark_verification_ke
  * Given a R1CS constraint system CS, this algorithm produces proving and verification keys for CS.
  */
 template<typename ppT>
-r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constraint_convol_system<ppT> &cs);
+r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constraint_system<ppT> &cs);
 
 
 } // libsnark

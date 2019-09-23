@@ -251,6 +251,18 @@ target_link_libraries(
 )
 
 add_executable(
+  zk_proof_systems_convol_snark
+  EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/profiling/profile_r1cs_conv_ppzksnark.cpp
+)
+target_link_libraries(
+  zk_proof_systems_convol_snark
+
+  snark
+)
+
+add_executable(
   profile_r1cs_sp_ppzkpcd
   EXCLUDE_FROM_ALL
 
@@ -581,6 +593,18 @@ target_link_libraries(
 )
 
 add_executable(
+  zk_proof_systems_convol_snark_test
+  EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/tests/test_r1cs_conv_ppzksnark.cpp
+)
+target_link_libraries(
+  zk_proof_systems_convol_snark_test
+
+  snark
+)
+
+add_executable(
   zk_proof_systems_ram_ppzksnark_test
   EXCLUDE_FROM_ALL
 
@@ -686,6 +710,9 @@ add_executable(
    jsnark_interface/CircuitReader.hpp
   jsnark_interface/CircuitReader.cpp
     jsnark_interface/run_ppzksnark.cpp
+
+  zk_proof_systems/ppzksnark/convol_snark/r1cs_legosnark.tcc
+  zk_proof_systems/ppzksnark/convol_snark/r1cs_legosnark.hpp
 )
 target_link_libraries(
   run_ppzksnark
@@ -793,6 +820,14 @@ add_test(
   NAME test_sha256_gadget
   COMMAND test_sha256_gadget
 )
+add_test(
+  NAME zk_proof_systems_convol_snark
+  COMMAND zk_proof_systems_convol_snark
+)
+add_test(
+  NAME zk_proof_systems_convol_snark_test
+  COMMAND zk_proof_systems_convol_snark_test
+)
 
 add_dependencies(check common_routing_algorithms_test)
 add_dependencies(check gadgetlib1_simple_test)
@@ -817,8 +852,9 @@ add_dependencies(check test_knapsack_gadget)
 add_dependencies(check test_merkle_tree_gadgets)
 add_dependencies(check test_set_commitment_gadget)
 add_dependencies(check test_sha256_gadget)
+add_dependencies(check zk_proof_systems_convol_snark)
 
-# TODO (howardwu): Resolve runtime on targets:
+# TODO (howardwu) Resolve runtime on targets
 # gadgetlib1_fooram_test, zk_proof_systems_r1cs_mp_ppzkpcd_test, zk_proof_systems_r1cs_sp_ppzkpcd_test, zk_proof_systems_ram_zksnark_test
 
 # add_test(

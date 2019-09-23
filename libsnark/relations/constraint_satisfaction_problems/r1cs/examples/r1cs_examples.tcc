@@ -22,21 +22,21 @@
 namespace libsnark {
 
 	template<typename FieldT>
-		r1cs_example<FieldT> generate_r1cs_example_with_image_convol(const size_t num_kernel,
-				const size_t num_w, const size_t num_h)
+		r1cs_example<FieldT> generate_r1cs_example_with_image_convol(const size_t num_kernel_h, size_t num_kernel_w,
+				const size_t num_h, const size_t num_w)
 		{
 			libff::enter_block("Call to generate_r1cs_example_with_image_convol");
 
 			r1cs_constraint_system<FieldT> cs;
-			cs.primary_input_size = (num_kernel)*(num_kernel)+(num_w)*(num_h);
-			cs.auxiliary_input_size = (num_kernel+num_w-1)*(num_kernel+num_h-1); // TODO: explain this
+			cs.primary_input_size = (num_kernel_h)*(num_kernel_w)+(num_w)*(num_h);
+			cs.auxiliary_input_size = (num_kernel_w+num_w-1)*(num_kernel_h+num_h-1); // TODO: explain this
 			size_t num_constraints = cs.auxiliary_input_size;
 
 			libff::enter_block("set variables");
 			///TODO need to change
 			r1cs_variable_assignment<FieldT> full_variable_assignment;
 			size_t sumk=0;
-			for(size_t i=0; i<(num_kernel)*(num_kernel); i++){
+			for(size_t i=0; i<(num_kernel_h)*(num_kernel_w); i++){
 				full_variable_assignment.push_back(i+1);
 				sumk+=(i+1);
 			}
@@ -49,7 +49,7 @@ namespace libsnark {
 			libff::enter_block("set constraints");
 			for (size_t i = 0; i < num_constraints-1; ++i)
 			{
-					std::cout<<"i : "<<i<<std::endl;
+					//std::cout<<"i : "<<i<<std::endl;
 				FieldT a = FieldT::zero();
 				FieldT x = FieldT::zero();
 				FieldT s = FieldT(i+1);
@@ -60,10 +60,10 @@ namespace libsnark {
 				//std::cout<<"s : "<<s.as_ulong()<<", t : "<<t.as_ulong()<<std::endl;
 				FieldT temp_s = FieldT::one();
 				FieldT temp_t = FieldT::one();
-				for(size_t j=0; j<(num_kernel);j++)
+				for(size_t j=0; j<(num_kernel_h);j++)
 				{
-					for(size_t k=0; k<(num_kernel);k++){
-						A.add_term((j*num_kernel)+k+1, temp_s*temp_t);
+					for(size_t k=0; k<(num_kernel_w);k++){
+						A.add_term((j*num_kernel_w)+k+1, temp_s*temp_t);
 						//std::cout<<"ker : "<<(j*num_kernel)+k+1<<" : "<<((s^j)*(t^k)).as_ulong()<<std::endl;
 						temp_t *= t;
 					}
@@ -75,7 +75,7 @@ namespace libsnark {
 				for(size_t j=0; j<num_w;j++)
 				{
 					for(size_t k=0; k<(num_h);k++){
-						B.add_term((num_kernel*num_kernel)+(num_w*j)+k+1, temp_s*temp_t); 
+						B.add_term((num_kernel_w*num_kernel_h)+(num_w*j)+k+1, temp_s*temp_t); 
 						//std::cout<<"im : "<<((num_kernel*num_kernel)+j*num_w)+k+1<<" : " <<((s^j)*(t^k)).as_ulong()<<std::endl;
 						temp_t *= t;
 					}
@@ -83,9 +83,9 @@ namespace libsnark {
 				}
 				temp_s = FieldT::one();
 				temp_t = FieldT::one();
-				for(size_t j=0; j<(num_w+num_kernel-1);j++){
-					for(size_t k=0; k<(num_h+num_kernel-1);k++){
-						C.add_term((num_kernel*num_kernel)+(num_w*num_h)+(num_w+num_kernel-1)*j+k+1, temp_s*temp_t);
+				for(size_t j=0; j<(num_h+num_kernel_h-1);j++){
+					for(size_t k=0; k<(num_w+num_kernel_w-1);k++){
+						C.add_term((num_kernel_h*num_kernel_w)+(num_w*num_h)+(num_w+num_kernel_w-1)*j+k+1, temp_s*temp_t);
 						temp_t *= t;
 					}
 					temp_s *= s;
@@ -98,17 +98,17 @@ namespace libsnark {
 			size_t ycount = 0;
 			//std::cout<<"y : ";
 			libff::enter_block("Compute y variables");
-			for(size_t j=0; j<(num_w+num_kernel-1);j++){
-				for(size_t k=0; k<(num_h+num_kernel-1);k++){
+			for(size_t j=0; j<(num_h+num_kernel_h-1);j++){
+				for(size_t k=0; k<(num_w+num_kernel_w-1);k++){
 					FieldT y = FieldT::zero();
-					for(size_t w=0; w<num_w;w++){
-						for(size_t h=0;h<num_h;h++){
-							for(size_t k1=0; k1<num_kernel;k1++){
-								for(size_t k2=0; k2<num_kernel;k2++){
+					for(size_t w=0; w<num_h;w++){
+						for(size_t h=0;h<num_w;h++){
+							for(size_t k1=0; k1<num_kernel_h;k1++){
+								for(size_t k2=0; k2<num_kernel_w;k2++){
 									if((w+k1) == j && (h+k2) == k)
 									{
 										//std::cout<<"w,h,k1,k2 = "<<w<<h<<k1<<k2<<std::endl;
-										y += FieldT(k1*num_kernel+k2+1)*FieldT(w*num_w+h+1);
+										y += FieldT(k1*num_kernel_w+k2+1)*FieldT(w*num_w+h+1);
 									}
 								}
 							}
@@ -288,21 +288,21 @@ namespace libsnark {
 			cs.add_constraint(r1cs_constraint<FieldT>(A, B, C));
 			full_variable_assignment.push_back(fin.squared());
 
-			for(size_t j=0;j<cs.num_variables();j++){
-				for(size_t i=0;i<cs.num_constraints();i++){
-					if(i==0)std::cout<<full_variable_assignment[j].as_ulong() << "\t"<< j<<"\t";
-					std::cout<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\t";
-				}
-				std::cout<<"\n\t\t";
-				for(size_t i=0;i<cs.num_constraints();i++){
-					std::cout<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\t";
-				}
-				std::cout<<"\n\t\t";
-				for(size_t i=0;i<cs.num_constraints();i++){
-					std::cout<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\t";
-				}
-				std::cout<<std::endl;
-			}
+			// for(size_t j=0;j<cs.num_variables();j++){
+			// 	for(size_t i=0;i<cs.num_constraints();i++){
+			// 		if(i==0)std::cout<<full_variable_assignment[j].as_ulong() << "\t"<< j<<"\t";
+			// 		std::cout<<cs.constraints[i].a.terms[j].coeff.as_ulong()<<"\t";
+			// 	}
+			// 	std::cout<<"\n\t\t";
+			// 	for(size_t i=0;i<cs.num_constraints();i++){
+			// 		std::cout<<cs.constraints[i].b.terms[j].coeff.as_ulong()<<"\t";
+			// 	}
+			// 	std::cout<<"\n\t\t";
+			// 	for(size_t i=0;i<cs.num_constraints();i++){
+			// 		std::cout<<cs.constraints[i].c.terms[j].coeff.as_ulong()<<"\t";
+			// 	}
+			// 	std::cout<<std::endl;
+			// }
 
 			/* split variable assignment */
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs);
@@ -384,7 +384,7 @@ namespace libsnark {
 		}
 
 template<typename FieldT>
-		r1cs_example<FieldT> generate_r1cs_origin_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol)
+		r1cs_example<FieldT> generate_r1cs_origin_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels)
 		{
 			libff::enter_block("Call to generate_r1cs_convol_example");
 
@@ -393,8 +393,8 @@ template<typename FieldT>
 			r1cs_constraint_system<FieldT> cs;
 			cs.primary_input_size = num_inputs + num_kernels;
 			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
-			cs.convol_size = 0;
-			cs.convol_outputs_size = 0;//num_inputs + num_kernels - 1;
+			cs.num_convol = 0;
+			//cs.num_convol_outputs = 0;//num_inputs + num_kernels - 1;
 
 
 			r1cs_variable_assignment<FieldT> full_variable_assignment;
@@ -403,14 +403,14 @@ template<typename FieldT>
 			std::cout<<"kernels :";
 			for(size_t i=0; i< num_kernels;i++){
 				full_variable_assignment.push_back(kernels[i]);
-				std::cout<<kernels[i].as_ulong()<<"\t";
+				//std::cout<<kernels[i].as_ulong()<<"\t";
 			}
 
 			std::cout<<"\ninputs :";
 			for (size_t i = 0; i < num_inputs; ++i)
 			{
 				full_variable_assignment.push_back(inputs[i]);
-				std::cout<<inputs[i].as_ulong()<<"\t";
+				//std::cout<<inputs[i].as_ulong()<<"\t";
 			}
 
 
@@ -426,13 +426,13 @@ template<typename FieldT>
 						}
 					}
 				}
-				std::cout<<y.as_ulong()<<"\t";
+				//std::cout<<y.as_ulong()<<"\t";
 				full_variable_assignment.push_back(y);
 			}
-			std::cout<<"\n";
+			//std::cout<<"\n";
 			
 			cs.add_convol_constraint(num_inputs, num_kernels); //num_inputs + num_kernels - 1);
-			std::cout<<"convol size = "<<cs.convol_size<<"\nconvol output size = "<<cs.convol_outputs_size<<std::endl;
+			std::cout<<"convol size = "<<cs.num_convol<<"\nconvol output size = "<<cs.convol_outputs_size[0]<<std::endl;
 			/* split variable assignment */
 			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
 			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());

@@ -83,6 +83,38 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
     GLA::protoboard_t converted_pb = adapter.convert(pb);
     for (const GLA::constraint_t &constr : converted_pb.first)
     {
+        /*
+        std::cout<<"lin1=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<0>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        std::cout<<"lin2=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<1>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        std::cout<<"lin3=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<2>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        std::cout<<"lin4=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<3>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        std::cout<<"lin5=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<4>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        std::cout<<"lin6=>";
+        for(GLA::linear_term_t lt : std::get<0>(std::get<5>(constr))){
+            std::cout<<"idx : "<<std::get<0>(lt)<<", value : "<<(std::get<1>(lt)).as_ulong()<<std::endl;
+        }
+        std::cout<<std::endl;
+        */
         result.constraints.emplace_back(r1cs_constraint<FieldT>(convert_gadgetlib2_linear_combination(std::get<0>(constr)),
                                                                 convert_gadgetlib2_linear_combination(std::get<1>(constr)),
                                                                 convert_gadgetlib2_linear_combination(std::get<2>(constr)),
@@ -96,6 +128,8 @@ r1cs_constraint_system<libff::Fr<libff::default_ec_pp> > get_constraint_convol_s
     //The number of variables is the highest index created.
     //TODO: If there are multiple protoboards, or variables not assigned to a protoboard, then getNextFreeIndex() is *not* the number of variables! See also in get_variable_assignment_from_gadgetlib2.
     const size_t num_variables = GLA::getNextFreeIndex();
+    std::cout<<"num val : "<<num_variables<<std::endl;
+    std::cout<<"num input : "<<pb.numInputs()<<std::endl;
     result.primary_input_size = pb.numInputs();
     result.auxiliary_input_size = num_variables - pb.numInputs();
     for(size_t i=0;i<pb.convol_size;i++){
@@ -121,6 +155,7 @@ r1cs_variable_assignment<libff::Fr<libff::default_ec_pp> > get_variable_assignme
     //TODO: If there are multiple protoboards, or variables not assigned to a protoboard, then getNextFreeIndex() is *not* the number of variables! See also in get_constraint_system_from_gadgetlib2.
     const size_t num_vars = GLA::getNextFreeIndex();
     const GLA adapter;
+    std::cout<<"num var : "<<num_vars<<std::endl;
     r1cs_variable_assignment<FieldT> result(num_vars, FieldT::zero());
     VariableAssignment assignment = pb.assignment();
 

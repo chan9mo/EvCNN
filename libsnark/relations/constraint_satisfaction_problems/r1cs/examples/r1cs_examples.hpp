@@ -45,8 +45,8 @@ struct r1cs_example {
 };
 
 template<typename FieldT>
-r1cs_example<FieldT> generate_r1cs_example_with_image_convol(const size_t num_kernel,
-                                                            const size_t num_w, const size_t num_h);
+r1cs_example<FieldT> generate_r1cs_example_with_image_convol(const size_t num_kernel_h, size_t num_kernel_w,
+				const size_t num_h, const size_t num_w);
 
 
 template<typename FieldT>
@@ -104,7 +104,7 @@ struct r1cs_convol_example {
 };
 */
 template<typename FieldT>
-		r1cs_example<FieldT> generate_r1cs_origin_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels, const size_t num_convol);
+		r1cs_example<FieldT> generate_r1cs_origin_convol_example(const size_t num_inputs, const std::vector<FieldT> inputs, const size_t num_kernels, const std::vector<FieldT> kernels);
 
 /*
 template<typename FieldT>

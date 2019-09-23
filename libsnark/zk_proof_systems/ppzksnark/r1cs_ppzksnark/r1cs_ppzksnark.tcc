@@ -825,18 +825,19 @@ bool r1cs_ppzksnark_affine_verifier_weak_IC(const r1cs_ppzksnark_verification_ke
 
 
 ///****NEW SYSTEM///////
-
+/*
 template <typename ppT>
-r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constraint_convol_system<ppT> &cs)
+r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constraint_system<ppT> &cs)
 {
     libff::enter_block("Call to r1cs_ppzksnark_generator");
 
-    /* make the B_query "lighter" if possible */
+    // make the B_query "lighter" if possible 
 	//change mr1cs
-    r1cs_ppzksnark_constraint_convol_system<ppT> cs_copy(cs);
+    //r1cs_ppzksnark_constraint_convol_system<ppT> cs_copy(cs);
+    r1cs_ppzksnark_constraint_system<ppT> cs_copy(cs);
     //cs_copy.swap_AB_if_beneficial();
 
-    /* draw random element at which the QAP is evaluated */
+    // draw random element at which the QAP is evaluated 
     const  libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
 
 	std::cout<<"cs convol : "<<cs_copy.num_convol()<<" cs convol out : "<<cs_copy.num_convol_outputs()<<std::endl;
@@ -879,7 +880,7 @@ r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constr
     libff::Fr_vector<ppT> Ct = std::move(qap_inst.Ct); // qap_inst.Ct is now in unspecified state, but we do not use it later
     libff::Fr_vector<ppT> Ht = std::move(qap_inst.Ht); // qap_inst.Ht is now in unspecified state, but we do not use it later
 
-    /* append Zt to At,Bt,Ct with */
+    // append Zt to At,Bt,Ct with 
     At.emplace_back(qap_inst.Zt);
     Bt.emplace_back(qap_inst.Zt);
     Ct.emplace_back(qap_inst.Zt);
@@ -904,7 +905,7 @@ r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constr
     Kt.emplace_back(beta * rB * qap_inst.Zt);
     Kt.emplace_back(beta * rC * qap_inst.Zt);
 
-    /* zero out prefix of At and stick it into IC coefficients */
+    // zero out prefix of At and stick it into IC coefficients 
     libff::Fr_vector<ppT> IC_coefficients;
     IC_coefficients.reserve(qap_inst.num_inputs() + 1);
     for (size_t i = 0; i < qap_inst.num_inputs() + 1; ++i)
@@ -1015,6 +1016,7 @@ r1cs_ppzksnark_keypair<ppT> r1cs_ppzksnark_generator(const r1cs_ppzksnark_constr
 
     return r1cs_ppzksnark_keypair<ppT>(std::move(pk), std::move(vk));
 }
+
 
 template <typename ppT>
 r1cs_ppzksnark_proof<ppT> r1cs_convol_ppzksnark_prover(const r1cs_ppzksnark_proving_key<ppT> &pk,
@@ -1131,7 +1133,7 @@ r1cs_ppzksnark_proof<ppT> r1cs_convol_ppzksnark_prover(const r1cs_ppzksnark_prov
 			std::cout<<i<<" : "<<qap_wit.coefficients_for_H[i].as_ulong()<<std::endl;
 		}
 	}
-	*/
+	
 
     r1cs_ppzksnark_proof<ppT> proof = r1cs_ppzksnark_proof<ppT>(std::move(g_A), std::move(g_B), std::move(g_C), std::move(g_H), std::move(g_K));
     proof.print_size();
@@ -1139,6 +1141,7 @@ r1cs_ppzksnark_proof<ppT> r1cs_convol_ppzksnark_prover(const r1cs_ppzksnark_prov
 
     return proof;
 }
+*/
 
 } // libsnark
 #endif // R1CS_PPZKSNARK_TCC_

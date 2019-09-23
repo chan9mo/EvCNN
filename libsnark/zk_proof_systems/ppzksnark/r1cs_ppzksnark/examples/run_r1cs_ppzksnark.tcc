@@ -110,8 +110,8 @@ bool run_r1cs_ppzksnark(const r1cs_example<libff::Fr<ppT> > &example,
 }
 
 
-/////****NEW SYSTEM///////
-
+/////NEW SYSTEM///////
+/*
 template<typename ppT>
 bool run_r1cs_ppzksnark(const r1cs_convol_example<libff::Fr<ppT> > &example,
                         const bool test_serialization)
@@ -160,6 +160,7 @@ bool run_r1cs_ppzksnark(const r1cs_convol_example<libff::Fr<ppT> > &example,
 
     return ans;
 }
+*/
 
 } // libsnark
 

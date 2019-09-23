@@ -497,8 +497,13 @@ void r1cs_constraint_system<FieldT>::add_convol_constraint(const size_t num_inpu
     for(size_t i=0; i<num_kernels+num_inputs-1;i++){
         C1.add_term(num_kernels+num_inputs+i+1, i);
 	}
-
-    convol_outputs_size = num_kernels+num_inputs-1;//num_outputs;
+    //convol_outputs_size.resize(1);
+    convol_input_height.push_back(num_inputs);
+    convol_kernel_height.push_back(num_kernels);
+    convol_input_width.push_back(0);
+    convol_kernel_width.push_back(0);
+    convol_outputs_size.push_back(num_kernels+num_inputs-1);//num_outputs;
+    convol_outputs_size2.push_back(0);
     num_convol++;
 
     constraints.emplace_back(r1cs_constraint<FieldT>(A, B, C, A1, B1, C1));

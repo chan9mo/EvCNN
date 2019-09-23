@@ -219,7 +219,7 @@ r1cs_gg_ppzksnark_keypair<ppT> r1cs_gg_ppzksnark_generator(const r1cs_gg_ppzksna
     r1cs_copy.swap_AB_if_beneficial();
 
     /* Generate secret randomness */
-    const libff::Fr<ppT> t = libff::Fr<ppT>(20);//libff::Fr<ppT>::random_element();
+    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
     const libff::Fr<ppT> alpha = libff::Fr<ppT>::random_element();
     const libff::Fr<ppT> beta = libff::Fr<ppT>::random_element();
     const libff::Fr<ppT> gamma = libff::Fr<ppT>::random_element();
@@ -228,7 +228,7 @@ r1cs_gg_ppzksnark_keypair<ppT> r1cs_gg_ppzksnark_generator(const r1cs_gg_ppzksna
     const libff::Fr<ppT> delta_inverse = delta.inverse();
 
     /* A quadratic arithmetic program evaluated at t. */
-    qap_instance_evaluation<libff::Fr<ppT> > qap = mr1cs_to_qap_instance_map_with_evaluation(r1cs_copy, t);//r1cs_to_qap_instance_map_with_evaluation(r1cs_copy, t);
+    qap_instance_evaluation<libff::Fr<ppT> > qap = r1cs_to_qap_instance_map_with_evaluation(r1cs_copy, t);//r1cs_to_qap_instance_map_with_evaluation(r1cs_copy, t);
 
     libff::print_indent(); printf("* QAP number of variables: %zu\n", qap.num_variables());
     libff::print_indent(); printf("* QAP pre degree: %zu\n", r1cs_copy.constraints.size());
@@ -401,8 +401,128 @@ r1cs_gg_ppzksnark_proof<ppT> r1cs_gg_ppzksnark_prover(const r1cs_gg_ppzksnark_pr
 
 
     libff::enter_block("Compute the polynomial H");
-    //const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
-    const libff::Fr<ppT> t = libff::Fr<ppT>(20);
+    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
+    //const qap_witness<libff::Fr<ppT> > qap_wit  = r1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), t);
+
+    const qap_witness<libff::Fr<ppT> > qap_wit = r1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero());
+
+    /* We are dividing degree 2(d-1) polynomial by degree d polynomial
+       and not adding a PGHR-style ZK-patch, so our H is degree d-2 */
+    assert(!qap_wit.coefficients_for_H[qap_wit.degree()-2].is_zero());
+    assert(qap_wit.coefficients_for_H[qap_wit.degree()-1].is_zero());
+    assert(qap_wit.coefficients_for_H[qap_wit.degree()].is_zero());
+    libff::leave_block("Compute the polynomial H");
+
+#ifdef DEBUG
+    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
+    qap_instance_evaluation<libff::Fr<ppT> > qap_inst = r1cs_to_qap_instance_map_with_evaluation(pk.constraint_system, t);
+    assert(qap_inst.is_satisfied(qap_wit));
+#endif
+
+    /* Choose two random field elements for prover zero-knowledge. */
+    const libff::Fr<ppT> r = libff::Fr<ppT>::random_element();
+    const libff::Fr<ppT> s = libff::Fr<ppT>::random_element();
+
+#ifdef DEBUG
+    assert(qap_wit.coefficients_for_ABCs.size() == qap_wit.num_variables());
+    assert(pk.A_query.size() == qap_wit.num_variables()+1);
+    assert(pk.B_query.domain_size() == qap_wit.num_variables()+1);
+    assert(pk.H_query.size() == qap_wit.degree() - 1);
+    assert(pk.L_query.size() == qap_wit.num_variables() - qap_wit.num_inputs());
+#endif
+
+#ifdef MULTICORE
+    const size_t chunks = omp_get_max_threads(); // to override, set OMP_NUM_THREADS env var or call omp_set_num_threads()
+#else
+    const size_t chunks = 1;
+#endif
+
+    libff::enter_block("Compute the proof");
+
+    libff::enter_block("Compute evaluation to A-query", false);
+    // TODO: sort out indexing
+    libff::Fr_vector<ppT> const_padded_assignment(1, libff::Fr<ppT>::one());
+    const_padded_assignment.insert(const_padded_assignment.end(), qap_wit.coefficients_for_ABCs.begin(), qap_wit.coefficients_for_ABCs.end());
+
+    libff::G1<ppT> evaluation_At = libff::multi_exp_with_mixed_addition<libff::G1<ppT>,
+                                                                        libff::Fr<ppT>,
+                                                                        libff::multi_exp_method_BDLO12>(
+        pk.A_query.begin(),
+        pk.A_query.begin() + qap_wit.num_variables() + 1,
+        const_padded_assignment.begin(),
+        const_padded_assignment.begin() + qap_wit.num_variables() + 1,
+        chunks);
+    libff::leave_block("Compute evaluation to A-query", false);
+
+    libff::enter_block("Compute evaluation to B-query", false);
+    knowledge_commitment<libff::G2<ppT>, libff::G1<ppT> > evaluation_Bt = kc_multi_exp_with_mixed_addition<libff::G2<ppT>,
+                                                                                                           libff::G1<ppT>,
+                                                                                                           libff::Fr<ppT>,
+                                                                                                           libff::multi_exp_method_BDLO12>(
+        pk.B_query,
+        0,
+        qap_wit.num_variables() + 1,
+        const_padded_assignment.begin(),
+        const_padded_assignment.begin() + qap_wit.num_variables() + 1,
+        chunks);
+    libff::leave_block("Compute evaluation to B-query", false);
+
+    libff::enter_block("Compute evaluation to H-query", false);
+    libff::G1<ppT> evaluation_Ht = libff::multi_exp<libff::G1<ppT>,
+                                                    libff::Fr<ppT>,
+                                                    libff::multi_exp_method_BDLO12>(
+        pk.H_query.begin(),
+        pk.H_query.begin() + (qap_wit.degree() - 1),
+        qap_wit.coefficients_for_H.begin(),
+        qap_wit.coefficients_for_H.begin() + (qap_wit.degree() - 1),
+        chunks);
+    libff::leave_block("Compute evaluation to H-query", false);
+
+    libff::enter_block("Compute evaluation to L-query", false);
+    libff::G1<ppT> evaluation_Lt = libff::multi_exp_with_mixed_addition<libff::G1<ppT>,
+                                                                        libff::Fr<ppT>,
+                                                                        libff::multi_exp_method_BDLO12>(
+        pk.L_query.begin(),
+        pk.L_query.end(),
+        const_padded_assignment.begin() + qap_wit.num_inputs() + 1,
+        const_padded_assignment.begin() + qap_wit.num_variables() + 1,
+        chunks);
+    libff::leave_block("Compute evaluation to L-query", false);
+
+    /* A = alpha + sum_i(a_i*A_i(t)) + r*delta */
+    libff::G1<ppT> g1_A = pk.alpha_g1 + evaluation_At + r * pk.delta_g1;
+
+    /* B = beta + sum_i(a_i*B_i(t)) + s*delta */
+    libff::G1<ppT> g1_B = pk.beta_g1 + evaluation_Bt.h + s * pk.delta_g1;
+    libff::G2<ppT> g2_B = pk.beta_g2 + evaluation_Bt.g + s * pk.delta_g2;
+
+    /* C = sum_i(a_i*((beta*A_i(t) + alpha*B_i(t) + C_i(t)) + H(t)*Z(t))/delta) + A*s + r*b - r*s*delta */
+    libff::G1<ppT> g1_C = evaluation_Ht + evaluation_Lt + s *  g1_A + r * g1_B - (r * s) * pk.delta_g1;
+
+    libff::leave_block("Compute the proof");
+
+    libff::leave_block("Call to r1cs_gg_ppzksnark_prover");
+
+    r1cs_gg_ppzksnark_proof<ppT> proof = r1cs_gg_ppzksnark_proof<ppT>(std::move(g1_A), std::move(g2_B), std::move(g1_C));
+    proof.print_size();
+
+    return proof;
+}
+
+template <typename ppT>
+r1cs_gg_ppzksnark_proof<ppT> r1cs_gg_ppzksnark_prover2(const r1cs_gg_ppzksnark_proving_key<ppT> &pk,
+                                                      const r1cs_gg_ppzksnark_primary_input<ppT> &primary_input,
+                                                      const r1cs_gg_ppzksnark_auxiliary_input<ppT> &auxiliary_input)
+{
+    libff::enter_block("Call to r1cs_gg_ppzksnark_prover");
+
+#ifdef DEBUG
+    assert(pk.constraint_system.is_satisfied(primary_input, auxiliary_input));
+#endif
+
+
+    libff::enter_block("Compute the polynomial H");
+    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
     //const qap_witness<libff::Fr<ppT> > qap_wit  = mr1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), t);
 
     const qap_witness<libff::Fr<ppT> > qap_wit = r1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero());
