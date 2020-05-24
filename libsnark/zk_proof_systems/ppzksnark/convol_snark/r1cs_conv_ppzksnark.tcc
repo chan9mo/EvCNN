@@ -402,6 +402,7 @@ r1cs_conv_ppzksnark_proof<ppT> r1cs_conv_ppzksnark_prover(const r1cs_conv_ppzksn
 
     libff::enter_block("Compute the polynomial H");
     const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
+    std::cout<<"t "<<t.as_ulong()<<std::endl;
     const qap_witness<libff::Fr<ppT> > qap_wit  = mr1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), t);
 
     //const qap_witness<libff::Fr<ppT> > qap_wit = r1cs_to_qap_witness_map(pk.constraint_system, primary_input, auxiliary_input, libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero(), libff::Fr<ppT>::zero());

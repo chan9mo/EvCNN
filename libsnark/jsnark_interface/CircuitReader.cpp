@@ -127,9 +127,12 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 			std::vector<FieldT> inValues;
 			std::vector<Wire> outWires;
 			Wire inWireId;
+			//"3 4 5 6 7"
 			while (iss_i >> inWireId) {
+				//inWireId = 3
 				wireUseCounters[inWireId]++;
 				inValues.push_back(wireValues[inWireId]);
+				//inValue <= wireValue[3] = (w3 =5)
 			}
 			readIds(outputStr, outWires);
 			
@@ -151,21 +154,20 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 						FieldT y = FieldT::zero();
 						for(size_t w=0; w<inputWidth;w++){
 							for(size_t h=0;h<inputHeight;h++){
-								for(size_t k1=0; k1<kernelWidth;k1++){
-									for(size_t k2=0; k2<kernelHeight;k2++){
-										if((w+k1) == j && (h+k2) == k)
-										{
+								size_t k1 = j - w;
+								size_t k2 = k - h;
+								if(( k1 >=0 && k1 < kernelWidth) && ( k2 >=0 && k2< kernelHeight))
+								{
 											//std::cout<<"w,h,k1,k2 = "<<w<<h<<k1<<k2<<std::endl;
 											//std::cout<<"k["<<k1<<"*"<<kernelHeight<<"+"<<k2<<"]("<<(inValues[k1*(kernelHeight)+k2]).as_ulong()<<")"
 											//"*x["<<w<<"*"<<inputHeight<<"+"<<h<<"]("<<(inValues[(w*inputHeight+h)]).as_ulong()<<") = "<<
 											//(inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)]).as_ulong()<<"\t";
-											y += inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)];
-										}
-									}
+									y += inValues[inputHeight*inputWidth + k1*(kernelHeight)+k2]*inValues[(w*inputHeight+h)];
 								}
 							}
 						}
 						//std::cout<<"outwire["<<j*(inputHeight+kernelHeight-1) + k<<"] ="<<y.as_ulong()<<"\n";
+						//outWire[] = output wire index
 						wireValues[outWires[j*(inputHeight+kernelHeight-1) + k]] = y;
 					}
 				}

@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
 	// Read the circuit, evaluate, and translate constraints
 	CircuitReader reader(argv[1 + inputStartIndex], argv[2 + inputStartIndex], pb);
-	r1cs_constraint_system<FieldT> cs =get_constraint_system_from_gadgetlib2(*pb);
+	r1cs_constraint_system<FieldT> cs =get_constraint_convol_system_from_gadgetlib2(*pb);
 	//r1cs_constraint_system<FieldT> cs2 =get_constraint_convol_system_from_gadgetlib2(*pb);// get_constraint_system_from_gadgetlib2(*pb);
 	r1cs_variable_assignment<FieldT> full_assignment = get_variable_assignment_from_gadgetlib2(*pb);
 	// std::cout<<"var 1"<<std::endl;
@@ -78,34 +78,11 @@ int main(int argc, char **argv) {
 	cs.primary_input_size = reader.getNumInputs() + reader.getNumOutputs();
 	cs.auxiliary_input_size = full_assignment.size() - cs.num_inputs();
 
-	r1cs_constraint_system<FieldT> cs2;
-	r1cs_variable_assignment<FieldT> full_assignment2;
-	if(argc == 6){
-
-		gadgetlib2::initPublicParamsFromDefaultPp();
-		gadgetlib2::GadgetLibAdapter::resetVariableIndex();
-		ProtoboardPtr pb2 = gadgetlib2::Protoboard::create(gadgetlib2::R1P);
-		CircuitReader reader2(argv[3 + inputStartIndex], argv[4 + inputStartIndex], pb2);
-		cs2 =get_constraint_convol_system_from_gadgetlib2(*pb2);
-		full_assignment2 = get_variable_assignment_from_gadgetlib2(*pb2);
-		cs2.primary_input_size = reader2.getNumInputs() + reader2.getNumOutputs();
-		cs2.auxiliary_input_size = full_assignment2.size() - cs2.num_inputs();
-		std::cout<<cs2.primary_input_size<<", "<<cs2.auxiliary_input_size<<std::endl;
-		// std::cout<<"var 2"<<std::endl;
-		// for(size_t i =0;i<full_assignment2.size();i++){
-		// 	std::cout<<i<<", "<<full_assignment2[i].as_ulong()<<std::endl;
-		// }
-	}
-
 	// extract primary and auxiliary input
 	const r1cs_primary_input<FieldT> primary_input(full_assignment.begin(),
 			full_assignment.begin() + cs.num_inputs());
 	const r1cs_auxiliary_input<FieldT> auxiliary_input(
 			full_assignment.begin() + cs.num_inputs(), full_assignment.end());
-	const r1cs_primary_input<FieldT> primary_input2(full_assignment2.begin() ,
-			full_assignment2.begin() + cs2.num_inputs() );
-	const r1cs_auxiliary_input<FieldT> auxiliary_input2(
-			full_assignment2.begin() + cs2.num_inputs(), full_assignment2.end());
 
 	// const r1cs_primary_input<FieldT> primary_input2(full_assignment2.begin() + full_assignment.size(),
 	// 		full_assignment2.begin() + cs2.num_inputs() + full_assignment.size());
@@ -149,13 +126,9 @@ int main(int argc, char **argv) {
 	
 	const bool test_serialization = false;
 	bool successBit = false;
-	if(argc == 3) {
+	if(argc == 4) {
 		successBit = libsnark::run_r1cs_oc_ppzksnark<libff::default_ec_pp>(example, test_serialization);
 
-	}else if(argc == 6){
-		r1cs_example<FieldT> example2(cs2, primary_input2, auxiliary_input2);
-		successBit = libsnark::run_r1cs_conv_ppzksnark<libsnark::default_r1cs_gg_ppzksnark_pp>(
-			example, example2, test_serialization);
 	}
 	
 	

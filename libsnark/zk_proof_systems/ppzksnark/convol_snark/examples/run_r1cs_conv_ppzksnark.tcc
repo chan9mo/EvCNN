@@ -27,29 +27,31 @@
 
 namespace libsnark {
 
+	/*
 template<typename ppT>
 typename std::enable_if<ppT::has_affine_pairing, void>::type
-test_affine_verifier(const r1cs_gg_ppzksnark_verification_key<ppT> &vk,
+test_affine_verifier(const r1cs_conv_ppzksnark_verification_key<ppT> &vk,
                      const accumulation_vector<libff::G1<ppT> > &cx ,
-                     const r1cs_gg_ppzksnark_proof<ppT> &proof,
+                     const r1cs_conv_ppzksnark_proof<ppT> &proof,
                      const bool expected_answer)
 {
     libff::print_header("R1CS GG-ppzkSNARK Affine Verifier");
-    const bool answer = r1cs_gg_ppzksnark_affine_verifier_weak_IC<ppT>(vk, cx, proof);
+    const bool answer = r1cs_conv_ppzksnark_affine_verifier_weak_IC<ppT>(vk, cx, proof);
     assert(answer == expected_answer);
 }
 
 template<typename ppT>
 typename std::enable_if<!ppT::has_affine_pairing, void>::type
-test_affine_verifier(const r1cs_gg_ppzksnark_verification_key<ppT> &vk,
+test_affine_verifier(const r1cs_conv_ppzksnark_verification_key<ppT> &vk,
                      const accumulation_vector<libff::G1<ppT> > &cx ,
-                     const r1cs_gg_ppzksnark_proof<ppT> &proof,
+                     const r1cs_conv_ppzksnark_proof<ppT> &proof,
                      const bool expected_answer)
 {
     libff::print_header("R1CS GG-ppzkSNARK Affine Verifier");
     libff::UNUSED(vk, cx, proof, expected_answer);
     printf("Affine verifier is not supported; not testing anything.\n");
 }
+*/
 
 /**
  * The code below provides an example of all stages of running a R1CS GG-ppzkSNARK.

@@ -695,7 +695,8 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 	libff::enter_block("Call to mr1cs_to_qap_instance_map_with_evaluation");
 
 
-	const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints()); //+ cs.num_inputs() + 1);
+	std::cout<<"cs num : "<<cs.num_constraints()<<std::endl;
+	const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints() + 1); //+ cs.num_inputs() + 1);
 	size_t degree = 0;
 	if(cs.num_convol) degree = (4*domain->m+1)*cs.num_convol_outputs(0);
 	else degree = (4*domain->m+1);
@@ -819,9 +820,10 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 			const FieldT &t
 			)
 	{
+		std::cout<<"t : "<<t.as_ulong()<<std::endl;
 		//t = FieldT(2);
 		//d1 = d2 = d3 = FieldT::zero();
-		const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints());//+ cs.num_inputs() + 1);
+		const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain = libfqfft::get_evaluation_domain<FieldT>(cs.num_constraints()+1);//+ cs.num_inputs() + 1);
 		const std::shared_ptr<libfqfft::evaluation_domain<FieldT> > domain2 =
 						libfqfft::get_evaluation_domain<FieldT>((4*domain->m+1)*cs.num_convol_outputs(0));
 
@@ -895,7 +897,7 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 		// std::cout << "aA*aB-aC : " << (aA1 * aB1 - aC1).as_ulong() << std::endl;
 
 		// ///qap witness start
-		// const std::vector<FieldT> u = domain->evaluate_all_lagrange_polynomials(t);
+		const std::vector<FieldT> u = domain->evaluate_all_lagrange_polynomials(t);
 
 		// std::vector<FieldT> tempMul(1, FieldT::zero());
 		size_t conv_index = 0;
@@ -924,42 +926,45 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 				// }
 
 				
-				std::vector<FieldT> zExtendPoly(domain2->m, FieldT::zero());//(cs.num_convol_input_height(0)*((domain->m)*4+1)+1), FieldT::zero());
+				std::vector<FieldT> zExtendPoly(domain2->m+1, FieldT::zero());//(cs.num_convol_input_height(0)*((domain->m)*4+1)+1), FieldT::zero());
 				for(size_t j=1;j<cs.constraints[i].a1.terms.size();j++){
 					size_t ttt = (cs.constraints[i].a1.terms[j].coeff.as_ulong())*(4*(domain->m)+1);
 					zExtendPoly[ttt] = full_variable_assignment[cs.constraints[i].a1.terms[j].index -1];
 					// std::cout<<ttt<<", var["<<cs.constraints[i].a1.terms[j].index -1<<"] = "<<full_variable_assignment[cs.constraints[i].a1.terms[j].index -1].as_ulong()<<std::endl;
 				}
 
-				// std::cout<<"zExtendPoly : ";
-				// for(size_t j=0; j<zExtendPoly.size();j++){
-				// 	std::cout<<zExtendPoly[j].as_ulong()<< "*x^"<<j<<" ";
-				// }
-				// for(auto x : zExtendPoly){
-				// 	f1 += x;
-				// }
-				// std::cout<<std::endl;
-				// std::cout<<"temp : ";
-				// FieldT tem = FieldT::one();
-				// FieldT sumt = FieldT::zero();
-				// for(size_t j=0; j<tempPoly.size();j++){
-				// 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
-				// 	sumt += tempPoly[j]*tem;
-				// 	tem *= t;
-				// }
-				// std::cout<<std::endl;
-				// std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				/*
+				 std::cout<<"zExtendPoly : ";
+				 for(size_t j=0; j<zExtendPoly.size();j++){
+				 	std::cout<<zExtendPoly[j].as_ulong()<< "*x^"<<j<<" ";
+				 }
+				 for(auto x : zExtendPoly){
+				 	f1 += x;
+				 }
+				 std::cout<<std::endl;
+				 std::cout<<"temp : ";
+				 FieldT tem = FieldT::one();
+				 FieldT sumt = FieldT::zero();
+				 for(size_t j=0; j<tempPoly.size();j++){
+				 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
+				 	sumt += tempPoly[j]*tem;
+				 	tem *= t;
+				 }
+				 std::cout<<std::endl;
+				 std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				 */
 				std::vector<FieldT> mulResult(1, FieldT::zero());
 				libfqfft::_polynomial_multiplication(mulResult, tempPoly, zExtendPoly);
 
-				
-				// std::cout<<"mul : ";
-				// for(size_t j=0; j<mulResult.size();j++){
-				// 	std::cout<<mulResult[j].as_ulong()<< "*x^"<<j<<" ";
-				// }
-				// std::cout<<std::endl;
+				/*
+				 std::cout<<"mul : ";
+				 for(size_t j=0; j<mulResult.size();j++){
+				 	std::cout<<mulResult[j].as_ulong()<< "*x^"<<j<<" ";
+				 }
+				 std::cout<<std::endl;
 
-				// std::cout<<"f1 : "<<f1.as_ulong()<<std::endl;
+				 std::cout<<"f1 : "<<f1.as_ulong()<<std::endl;
+				 */
 				for(size_t j=0;j<mulResult.size();j++){
 					if(j < aA.size()){
 						aA[j] += mulResult[j];
@@ -968,6 +973,7 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 						aA.push_back(mulResult[j]);
 					}
 				}
+				
 				// std::vector<FieldT> testA(aA);
 				// testA.resize(domain4->m, FieldT::zero());
 				// domain4->FFT(testA);
@@ -981,7 +987,7 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 				tempPoly[i] = FieldT::one();
 				domain->iFFT(tempPoly);
 
-				std::vector<FieldT> zExtendPoly(domain2->m, FieldT::zero());//(cs.num_convol_kernel_height(0)*((domain->m)*4+1)+1), FieldT::zero());
+				std::vector<FieldT> zExtendPoly(domain2->m+1, FieldT::zero());//(cs.num_convol_kernel_height(0)*((domain->m)*4+1)+1), FieldT::zero());
 				for(size_t j=1;j<cs.constraints[i].b1.terms.size();j++){
 					// size_t ttt = (cs.constraints[i].b1.terms[j].coeff.as_ulong())*(4*(domain->m)+1);
 
@@ -989,23 +995,24 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 					zExtendPoly[(cs.constraints[i].b1.terms[j].coeff.as_ulong())*(4*(domain->m)+1)] = full_variable_assignment[cs.constraints[i].b1.terms[j].index - 1];
 					// std::cout<<ttt<<", var["<<cs.constraints[i].b1.terms[j].index -1<<"] = "<<full_variable_assignment[cs.constraints[i].b1.terms[j].index -1].as_ulong()<<std::endl;
 				}
-				// for(auto x : zExtendPoly){
-				// 	f2 += x;
-				// }
-				// std::cout<<"temp : ";
-				// FieldT tem = FieldT::one();
-				// FieldT sumt = FieldT::zero();
-				// for(size_t j=0; j<tempPoly.size();j++){
-				// 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
-				// 	sumt += tempPoly[j]*tem;
-				// 	tem *= t;
-				// }
-				// std::cout<<std::endl;
-				// std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				/*
+				 for(auto x : zExtendPoly){
+				 	f2 += x;
+				 }
+				 std::cout<<"temp : ";
+				 FieldT tem = FieldT::one();
+				 FieldT sumt = FieldT::zero();
+				 for(size_t j=0; j<tempPoly.size();j++){
+				 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
+				 	sumt += tempPoly[j]*tem;
+				 	tem *= t;
+				 }
+				 std::cout<<std::endl;
+				 std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				 */
 				std::vector<FieldT> mulResult(1, FieldT::zero());
 				libfqfft::_polynomial_multiplication(mulResult, tempPoly, zExtendPoly);
-				//FieldT f2 = FieldT::zero();
-
+				
 				// std::cout<<"f2 : "<<f2.as_ulong()<<std::endl;
 				for(size_t j=0;j<mulResult.size();j++){
 					if(j < aB.size()){
@@ -1030,26 +1037,29 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 				// tempP2[0] = tempP2[0]-1;
 				// libfqfft::_polynomial_multiplication(tempMul, tempPoly, tempP2);
 
-				std::vector<FieldT> zExtendPoly(domain2->m, FieldT::zero());//(cs.num_convol_outputs(0)*((domain->m)*4+1)+1), FieldT::zero());
+				std::vector<FieldT> zExtendPoly(domain2->m+1, FieldT::zero());//(cs.num_convol_outputs(0)*((domain->m)*4+1)+1), FieldT::zero());
+				//std::cout<<"d2m = "<<domain2->m<<std::endl;
 				for(size_t j=1;j<cs.constraints[i].c1.terms.size();j++){
-					// size_t ttt = (cs.constraints[i].c1.terms[j].coeff.as_ulong())*(4*(domain->m)+1);
+					 size_t ttt = (cs.constraints[i].c1.terms[j].coeff.as_ulong())*(4*(domain->m)+1);
 					zExtendPoly[(cs.constraints[i].c1.terms[j].coeff.as_ulong())*(4*(domain->m)+1)] = full_variable_assignment[cs.constraints[i].c1.terms[j].index -1];
-					// std::cout<<ttt<<", var["<<cs.constraints[i].c1.terms[j].index -1<<"] = "<<full_variable_assignment[cs.constraints[i].c1.terms[j].index -1].as_ulong()<<std::endl;
+					 //std::cout<<ttt<<", var["<<cs.constraints[i].c1.terms[j].index -1<<"] = "<<full_variable_assignment[cs.constraints[i].c1.terms[j].index -1].as_ulong()<<std::endl;
 				}
-				// for(auto x : zExtendPoly){
-				// 	f3 += x;
-				// }
-				// std::cout<<"f3 :"<<f3.as_ulong()<<std::endl;
-				// std::cout<<"temp : ";
-				// FieldT tem = FieldT::one();
-				// FieldT sumt = FieldT::zero();
-				// for(size_t j=0; j<tempPoly.size();j++){
-				// 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
-				// 	sumt += tempPoly[j]*tem;
-				// 	tem *= t;
-				// }
-				// std::cout<<std::endl;
-				// std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				/*
+				 for(auto x : zExtendPoly){
+				 	f3 += x;
+				 }
+				 std::cout<<"f3 :"<<f3.as_ulong()<<std::endl;
+				 std::cout<<"temp : ";
+				 FieldT tem = FieldT::one();
+				 FieldT sumt = FieldT::zero();
+				 for(size_t j=0; j<tempPoly.size();j++){
+				 	std::cout<<tempPoly[j].as_ulong()<< "*x^"<<j<<" ";
+				 	sumt += tempPoly[j]*tem;
+				 	tem *= t;
+				 }
+				 std::cout<<std::endl;
+				 std::cout<<"L(t) : "<<u[i].as_ulong()<<", sumt : "<<sumt.as_ulong()<<std::endl;
+				 */
 				std::vector<FieldT> mulResult(1, FieldT::zero());
 				libfqfft::_polynomial_multiplication(mulResult, tempPoly, zExtendPoly);
 
@@ -1069,7 +1079,7 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 				// 	std::cout<<j<<", "<<testC[j].as_ulong()<<std::endl;
 				// }
 			}
-			// std::cout<<"f1f2-f3 = "<<(f1*f2-f3).as_ulong()<<std::endl;
+			 //std::cout<<"f1f2-f3 = "<<(f1*f2-f3).as_ulong()<<std::endl;
 		}
 		// r1cs poly * wire
 		/*
@@ -1098,40 +1108,46 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 		// }
 
 		//A, B, C  point -> poly
-		//domain2->iFFT(aA);
-		//domain2->iFFT(aB);
-		//domain2->iFFT(aC);
-		// std::vector<FieldT> Ht;
-		// //FieldT t = FieldT(2);
-		// Ht.reserve(domain4->m);
-		// FieldT ti = FieldT::one();
-		// for(size_t i=0; i<domain4->m;i++){
-		// 	Ht.emplace_back(ti);
-		// 	ti*= t;
-		// }
-		// FieldT sum = FieldT::zero();
-		// for(size_t i=0;i<aA.size();i++){
-		// 	sum += aA[i]*Ht[i];
-		// }
+		aA.resize(domain2->m, FieldT::zero());
+		aB.resize(domain2->m, FieldT::zero());
+		aC.resize(domain2->m, FieldT::zero());
+		domain2->iFFT(aA);
+		domain2->iFFT(aB);
+		domain2->iFFT(aC);
+		 std::vector<FieldT> Ht;
+		//FieldT t = FieldT(2);
+		 Ht.reserve(domain4->m);
+		 FieldT ti = FieldT::one();
+		 //std::cout<<"t : "<<t.as_ulong()<<std::endl;
+		 for(size_t i=0; i<domain4->m;i++){
+		 	Ht.emplace_back(ti);
+		 	ti*= t;
+		 }
+		 /*
+		 FieldT sum = FieldT::zero();
+		 for(size_t i=0;i<aA.size();i++){
+		 	sum += aA[i]*Ht[i];
+		 }
 
-		// FieldT sum2 = FieldT::zero();
-		// for(size_t i=0;i<aB.size();i++){
-		// 	sum2 += aB[i]*Ht[i];
-		// }
+		 FieldT sum2 = FieldT::zero();
+		 for(size_t i=0;i<aB.size();i++){
+		 	sum2 += aB[i]*Ht[i];
+		 }
 
 
-		// FieldT sum3 = FieldT::zero();
-		// for(size_t i=0;i<aC.size();i++){
-		// 	sum3 += aC[i]*Ht[i];
-		// }
-		// //std::cout<<(sum).as_ulong()<<", "<<(sum2).as_ulong()<<", "<<(sum3).as_ulong()<<std::endl;
-		// FieldT ABC =sum*sum2 - sum3;
-		// // domain4->iFFT(tempMul);
+		 FieldT sum3 = FieldT::zero();
+		 for(size_t i=0;i<aC.size();i++){
+		 	sum3 += aC[i]*Ht[i];
+		 }
+		 std::cout<<(sum).as_ulong()<<", "<<(sum2).as_ulong()<<", "<<(sum3).as_ulong()<<std::endl;
+		 FieldT ABC =sum*sum2 - sum3;
+		 */
+		 // domain4->iFFT(tempMul);
 	
-		// // for(size_t j=0;j<domain4->m;j++){
-		// // 	ABC = ABC + (tempMul[j]*Ht[j]);
-		// // }
-		// std::cout<<(ABC).as_ulong()<<std::endl;
+		 // for(size_t j=0;j<domain4->m;j++){
+		// 	ABC = ABC + (tempMul[j]*Ht[j]);
+		 //}
+		 //std::cout<<(ABC).as_ulong()<<std::endl;
 
 		libff::leave_block("calcuate A, B, C for z");
 
@@ -1154,17 +1170,18 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 		aA.resize(domain4->m, FieldT::zero());
 		aB.resize(domain4->m, FieldT::zero());
 		aC.resize(domain4->m, FieldT::zero());
-
-		// std::vector<FieldT> tempaA(aA);
-		// std::vector<FieldT> tempaB(aB);
-		// std::vector<FieldT> tempaC(aC);
-		// domain4->FFT(tempaA);
-		// domain4->FFT(tempaB);
-		// domain4->FFT(tempaC);
-		// std::cout<<"A*B-C point"<<std::endl;
-		// for(size_t j=0;j<domain4->m;j++){
-		// 	std::cout<<j<<", "<<tempaA[j].as_ulong()<<", "<<tempaB[j].as_ulong()<<", "<<tempaC[j].as_ulong()<<", "<<(tempaA[j]*tempaB[j]-tempaC[j]).as_ulong()<<std::endl;
-		// }
+		/*
+		 std::vector<FieldT> tempaA(aA);
+		 std::vector<FieldT> tempaB(aB);
+		 std::vector<FieldT> tempaC(aC);
+		 domain4->FFT(tempaA);
+		 domain4->FFT(tempaB);
+		 domain4->FFT(tempaC);
+		 std::cout<<"A*B-C point"<<std::endl;
+		 for(size_t j=0;j<domain4->m;j++){
+		 	std::cout<<j<<", "<<tempaA[j].as_ulong()<<", "<<tempaB[j].as_ulong()<<", "<<tempaC[j].as_ulong()<<", "<<(tempaA[j]*tempaB[j]-tempaC[j]).as_ulong()<<std::endl;
+		 }
+		 */
 
 		//A(x) => A(gx) same B, C
 		libff::enter_block("Compute evaluation of polynomial A on set T");
@@ -1196,28 +1213,33 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 		///TODO change Z : domain Z is change to domain4 Z
 		std::vector<FieldT> Zpoly(domain->m+1, FieldT::zero());
 		domain->add_poly_Z(FieldT::one(), Zpoly);
-		// FieldT zsum = FieldT::zero();
-		// for(auto x : Zpoly){
-		// 	zsum += x;
-		// }
-		// std::cout<<"Z(1) = "<<zsum.as_ulong()<<std::endl;
+		/*
+		 FieldT zsum = FieldT::zero();
+		 for(auto x : Zpoly){
+		 	zsum += x;
+		 }
+		 std::cout<<"Z(1) = "<<zsum.as_ulong()<<std::endl;
 
+		 zsum = FieldT::zero();
 
-		// for(size_t i=0;i<Zpoly.size();i++){
-		// 	zsum += Zpoly[i]*Ht[i];
-		// }
-		// std::cout<<"Z("<<t.as_ulong()<<") = "<<zsum.as_ulong()<<std::endl;
-		// const FieldT Zt = domain->compute_vanishing_polynomial(t);
-		// std::cout<<"Zt : "<<Zt.as_ulong()<<std::endl;
+		 for(size_t i=0;i<Zpoly.size();i++){
+		 	zsum += Zpoly[i]*Ht[i];
+		 }
+		 std::cout<<"Z("<<t.as_ulong()<<") = "<<zsum.as_ulong()<<std::endl;
+		 const FieldT Zt = domain->compute_vanishing_polynomial(t);
+		 std::cout<<"Zt : "<<Zt.as_ulong()<<std::endl;
+		*/
 
 		Zpoly.resize(domain4->m, FieldT::zero());
 		
-		// std::vector<FieldT> tempZ(Zpoly);
-		// domain4->FFT(tempZ);
-		// std::cout<<"tempZ point"<<std::endl;
-		// for(size_t j=0; j<domain4->m;j++){
-		// 	std::cout<<j<<", "<<tempZ[j].as_ulong()<<std::endl;
-		// }
+		/*
+		 std::vector<FieldT> tempZ(Zpoly);
+		 domain4->FFT(tempZ);
+		 std::cout<<"tempZ point"<<std::endl;
+		 for(size_t j=0; j<domain4->m;j++){
+		 	std::cout<<j<<", "<<tempZ[j].as_ulong()<<std::endl;
+		 }
+		 */
 
 		domain4->cosetFFT(Zpoly, FieldT::multiplicative_generator);
 		// libff::leave_block("claculate Zt point");
@@ -1241,12 +1263,12 @@ qap_instance_evaluation<FieldT> mr1cs_to_qap_instance_map_with_evaluation(
 		}
 		libff::leave_block("Compute sum of H and ZK-patch");
 
-		// FieldT Hsum = FieldT::zero();
-		// for(size_t i=0;i<coefficients_for_H.size();i++){
-		// 	Hsum += coefficients_for_H[i]*Ht[i];
-		// }
-		// std::cout<<"H("<<t.as_ulong()<<") = "<<Hsum.as_ulong()<<std::endl;
-		// std::cout<<"ABC - H*Z = "<<(ABC - zsum*Hsum).as_ulong()<<std::endl;
+		 FieldT Hsum = FieldT::zero();
+		 for(size_t i=0;i<coefficients_for_H.size();i++){
+		 	Hsum += coefficients_for_H[i]*Ht[i];
+		 }
+		 //std::cout<<"H("<<t.as_ulong()<<") = "<<Hsum.as_ulong()<<std::endl;
+		 //std::cout<<"ABC - H*Z = "<<(ABC - zsum*Hsum).as_ulong()<<std::endl;
 
 
 
