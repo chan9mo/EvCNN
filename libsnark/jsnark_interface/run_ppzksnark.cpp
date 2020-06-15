@@ -33,7 +33,10 @@ int main(int argc, char **argv) {
 	ppzksnark_algorithm_type ppzksnark_algorithm = KLO18;
 
 	int inputStartIndex = 0;
+	std::cout<<argc<<std::endl;
+
 	if(argc == 6){
+		std::cout<<"ok"<<std::endl;
 		if(strncmp(argv[1],"conv",5) == 0){
 			ppzksnark_algorithm = Gro16;
 			inputStartIndex = 1;	
@@ -46,9 +49,7 @@ int main(int argc, char **argv) {
 			cout<<"Conv only"<<endl;
 			inputStartIndex = 1;	
 		}
-	}
-	else if(argc == 4){
-		if(strncmp(argv[1], "gg",3) == 0) {
+		else if(strncmp(argv[1], "gg",3) == 0) {
 			ppzksnark_algorithm = Gro16;
 			cout << "Using ppzksnark in the generic group model [Gro16]." << endl;
 		}
@@ -77,9 +78,15 @@ int main(int argc, char **argv) {
 
 	cs.primary_input_size = reader.getNumInputs() + reader.getNumOutputs();
 	cs.auxiliary_input_size = full_assignment.size() - cs.num_inputs();
+	cs.commit_input_size = reader.getCmNumInputs();
 
 	r1cs_constraint_system<FieldT> cs2;
 	r1cs_variable_assignment<FieldT> full_assignment2;
+	// // for two lego r1cs cs3= conv, cs4 = nconv
+	// r1cs_constraint_system<FieldT> cs3;
+	// r1cs_variable_assignment<FieldT> full_assignment3;
+	// r1cs_constraint_system<FieldT> cs4;
+	// r1cs_variable_assignment<FieldT> full_assignment4;
 	if(argc == 6){
 
 		gadgetlib2::initPublicParamsFromDefaultPp();
@@ -90,11 +97,42 @@ int main(int argc, char **argv) {
 		full_assignment2 = get_variable_assignment_from_gadgetlib2(*pb2);
 		cs2.primary_input_size = reader2.getNumInputs() + reader2.getNumOutputs();
 		cs2.auxiliary_input_size = full_assignment2.size() - cs2.num_inputs();
-		std::cout<<cs2.primary_input_size<<", "<<cs2.auxiliary_input_size<<std::endl;
+		cs2.commit_input_size = reader2.getCmNumInputs();
+		// std::cout<<cs2.primary_input_size<<", "<<cs2.auxiliary_input_size<<std::endl;
 		// std::cout<<"var 2"<<std::endl;
 		// for(size_t i =0;i<full_assignment2.size();i++){
 		// 	std::cout<<i<<", "<<full_assignment2[i].as_ulong()<<std::endl;
 		// }
+		/*
+		gadgetlib2::initPublicParamsFromDefaultPp();
+		gadgetlib2::GadgetLibAdapter::resetVariableIndex();
+		ProtoboardPtr pb3 = gadgetlib2::Protoboard::create(gadgetlib2::R1P);
+		CircuitReader reader3(argv[5 + inputStartIndex], argv[6 + inputStartIndex], pb3);
+		cs3 =get_constraint_convol_system_from_gadgetlib2(*pb3);
+		full_assignment3 = get_variable_assignment_from_gadgetlib2(*pb3);
+		cs3.primary_input_size = reader3.getNumInputs() + reader3.getNumOutputs();
+		cs3.auxiliary_input_size = full_assignment3.size() - cs3.num_inputs();
+		// std::cout<<cs3.primary_input_size<<", "<<cs3.auxiliary_input_size<<std::endl;
+		// std::cout<<"var 3"<<std::endl;
+		// for(size_t i =0;i<full_assignment3.size();i++){
+		// 	std::cout<<i<<", "<<full_assignment3[i].as_ulong()<<std::endl;
+		// }
+
+		gadgetlib2::initPublicParamsFromDefaultPp();
+		gadgetlib2::GadgetLibAdapter::resetVariableIndex();
+		ProtoboardPtr pb4 = gadgetlib2::Protoboard::create(gadgetlib2::R1P);
+		CircuitReader reader4(argv[7 + inputStartIndex], argv[8 + inputStartIndex], pb4);
+		std::cout<<argv[7 + inputStartIndex]<<", "<<argv[8 + inputStartIndex]<<std::endl;
+		cs4 =get_constraint_convol_system_from_gadgetlib2(*pb4);
+		full_assignment4 = get_variable_assignment_from_gadgetlib2(*pb4);
+		cs4.primary_input_size = reader4.getNumInputs() + reader4.getNumOutputs();
+		cs4.auxiliary_input_size = full_assignment4.size() - cs4.num_inputs();
+		// std::cout<<cs4.primary_input_size<<", "<<cs4.auxiliary_input_size<<std::endl;
+		// std::cout<<"var 4"<<std::endl;
+		// for(size_t i =0;i<full_assignment4.size();i++){
+		// 	std::cout<<i<<", "<<full_assignment4[i].as_ulong()<<std::endl;
+		// }
+		*/
 	}
 
 	// extract primary and auxiliary input
@@ -107,6 +145,18 @@ int main(int argc, char **argv) {
 	const r1cs_auxiliary_input<FieldT> auxiliary_input2(
 			full_assignment2.begin() + cs2.num_inputs(), full_assignment2.end());
 
+	/*
+	const r1cs_primary_input<FieldT> primary_input3(full_assignment3.begin() ,
+			full_assignment3.begin() + cs3.num_inputs() );
+	const r1cs_auxiliary_input<FieldT> auxiliary_input3(
+			full_assignment3.begin() + cs3.num_inputs(), full_assignment3.end());
+
+
+	const r1cs_primary_input<FieldT> primary_input4(full_assignment4.begin() ,
+			full_assignment4.begin() + cs4.num_inputs() );
+	const r1cs_auxiliary_input<FieldT> auxiliary_input4(
+			full_assignment4.begin() + cs4.num_inputs(), full_assignment4.end());
+	*/
 	// const r1cs_primary_input<FieldT> primary_input2(full_assignment2.begin() + full_assignment.size(),
 	// 		full_assignment2.begin() + cs2.num_inputs() + full_assignment.size());
 	// const r1cs_auxiliary_input<FieldT> auxiliary_input2(
@@ -154,6 +204,10 @@ int main(int argc, char **argv) {
 
 	}else if(argc == 6){
 		r1cs_example<FieldT> example2(cs2, primary_input2, auxiliary_input2);
+		//r1cs_example<FieldT> example3(cs3, primary_input3, auxiliary_input3);
+		//r1cs_example<FieldT> example4(cs4, primary_input4, auxiliary_input4);
+
+		std::cout<<"lego"<<std::endl;
 		successBit = libsnark::run_r1cs_conv_ppzksnark<libsnark::default_r1cs_gg_ppzksnark_pp>(
 			example, example2, test_serialization);
 	}

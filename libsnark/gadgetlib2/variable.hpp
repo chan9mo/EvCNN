@@ -271,9 +271,9 @@ class Variable {
 private:
     VarIndex_t index_;  ///< This index differentiates and identifies Variable instances.
     static VarIndex_t nextFreeIndex_; ///< Monotonically-increasing counter to allocate disinct indices.
-#ifdef DEBUG
+//#ifdef DEBUG
     ::std::string name_;
-#endif
+//#endif
 
    /**
     * @brief allocates the variable
@@ -281,6 +281,8 @@ private:
 public:
     explicit Variable(const ::std::string& name = "");
     virtual ~Variable();
+
+    //::std::string name_;
 
     ::std::string name() const;
 

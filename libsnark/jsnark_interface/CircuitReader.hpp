@@ -54,6 +54,7 @@ public:
 
 	int getNumInputs() { return inputWireIds.size();}
 	int getNumOutputs() { return outputWireIds.size();}
+	int getCmNumInputs() { return cminputWireIds.size();}
 	std::vector<Wire> getInputWireIds() const { return inputWireIds; }
 	std::vector<Wire> getOutputWireIds() const { return outputWireIds; }
 
@@ -75,6 +76,7 @@ private:
 	std::vector<Wire> inputWireIds;
 	std::vector<Wire> nizkWireIds;
 	std::vector<Wire> outputWireIds;
+	std::vector<Wire> cminputWireIds;
 
 	unsigned int currentVariableIdx, currentLinearCombinationIdx;
 

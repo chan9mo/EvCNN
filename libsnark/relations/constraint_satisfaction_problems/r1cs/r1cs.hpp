@@ -149,6 +149,7 @@ class r1cs_constraint_system {
 public:
     size_t primary_input_size;
     size_t auxiliary_input_size;
+    size_t commit_input_size;
     std::vector<size_t> convol_outputs_size;
     std::vector<size_t> convol_outputs_size2;
     size_t num_convol;
@@ -166,6 +167,7 @@ public:
     size_t num_inputs() const;
     size_t num_variables() const;
     size_t num_constraints() const;
+    size_t num_cminputs() const;
     //size_t num_convol();
     size_t num_convol_outputs(int num) const;
     size_t num_convol_outputs2(int num) const;

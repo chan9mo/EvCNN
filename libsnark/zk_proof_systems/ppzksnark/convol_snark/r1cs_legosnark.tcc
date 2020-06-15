@@ -133,9 +133,9 @@ r1cs_legosnark_keypair<ppT> r1cs_legosnark_generator(accumulation_vector<libff::
     P_vector.reserve(len+1);
 
     P_vector.emplace_back((k1*gamma_H.first) + (k2* gamma_F.first));
-    for(size_t i = 1; i < len+1; i++){
+    for(size_t i = 0; i < len; i++){
 		//H_vector.emplace_back(libff::G1<ppT>::one());
-		P_vector.emplace_back((k1 * gamma_H.rest.values[i]) + (k2 * gamma_F.rest.values[i+len2]));
+		P_vector.emplace_back((k1 * gamma_H.rest.values[i]) + (k2 * gamma_F.rest.values[i]));
     }
     r1cs_legosnark_proving_key<ppT> ek = r1cs_legosnark_proving_key<ppT>(std::move(P_vector));
     libff::G2<ppT> g2a = a*libff::G2<ppT>::one();
@@ -159,9 +159,9 @@ template <typename ppT>
 r1cs_legosnark_proof<ppT> r1cs_legosnark_prover(const r1cs_legosnark_proving_key<ppT> &pk, const r1cs_gg_ppzksnark_primary_input<ppT> &primary_input, size_t len){
     libff::G1<ppT> Proof_sum = libff::G1<ppT>::zero();
     Proof_sum = pk.P_g1[0];
-    for(size_t i = 1; i <  len+1; i++){ 
+    for(size_t i = 0; i <  len; i++){ 
         // std::cout<<i<<", "<<(primary_input[i]).as_ulong()<<std::endl;
-        Proof_sum = (primary_input[i] * pk.P_g1[i]) + Proof_sum;
+        Proof_sum = (primary_input[i] * pk.P_g1[i+1]) + Proof_sum;
     }
 
     r1cs_legosnark_proof<ppT> proof

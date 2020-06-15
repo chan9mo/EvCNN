@@ -155,12 +155,16 @@ r1cs_variable_assignment<libff::Fr<libff::default_ec_pp> > get_variable_assignme
     //TODO: If there are multiple protoboards, or variables not assigned to a protoboard, then getNextFreeIndex() is *not* the number of variables! See also in get_constraint_system_from_gadgetlib2.
     const size_t num_vars = GLA::getNextFreeIndex();
     const GLA adapter;
-    std::cout<<"num var : "<<num_vars<<std::endl;
+    std::cout<<"num var22 : "<<num_vars<<std::endl;
     r1cs_variable_assignment<FieldT> result(num_vars, FieldT::zero());
     VariableAssignment assignment = pb.assignment();
 
+    std::cout<<"test"<<std::endl;
     //Go over all assigned values of the protoboard, from every variable-value pair, put the value in the variable.index place of the new assignment.
     for(VariableAssignment::iterator iter = assignment.begin(); iter != assignment.end(); ++iter){
+        // std::cout<<"var name :"<<iter->first.name()<<", idx : "<<GLA::getVariableIndex(iter->first)<<std::endl;
+        // std::cout<<"val:";
+        // adapter.convert(iter->second).as_bigint().print();
     	result[GLA::getVariableIndex(iter->first)] = adapter.convert(iter->second);
     }
     

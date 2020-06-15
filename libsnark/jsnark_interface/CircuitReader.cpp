@@ -56,7 +56,7 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 				iss_i >> value;
 
 				wireValues[wireId] = FieldT(value);//readFieldElementFromHex(inputStr);
-				//std::cout<<"wireValues["<<wireId<<"] = "<<wireValues[wireId].as_ulong()<<std::endl;
+				// std::cout<<"wireValues["<<wireId<<"] = "<<wireValues[wireId].as_ulong()<<std::endl;
 			} else {
 				printf("Error in Input\n");
 				exit(-1);
@@ -117,6 +117,8 @@ void CircuitReader::parseAndEval(char* arithFilepath, char* inputsFilepath) {
 		} else if (1 == sscanf(line.c_str(), "output %s", wireId)) {
 			outputWireIds.push_back(wireId);
 			wireUseCounters[wireId]++;
+		} else if (1 == sscanf(line.c_str(), "cminput %s", wireId)){
+			cminputWireIds.push_back(wireId);
 		}
 		else if(7 == sscanf(line.c_str(), "%s in %d <%[^>]> out %d <%[^>]> state %d <%[^>]>", type,
 						&numGateInputs, inputStr, &numGateOutputs, outputStr, &numStates, stateStr) ){
@@ -326,6 +328,7 @@ void CircuitReader::constructCircuit(char* arithFilepath) {
 
 	Wire wire;
 	for (auto &wire : inputWireIds) {
+		// std::cout<<"input :"<<wire<<std::endl;
 		variables.push_back(make_shared<Variable>("input"));
 		variableMap[wire] = currentVariableIdx;
 		//std::cout<<"variableMap["<<wire<<"]="<<variableMap[wire]<<std::endl;
@@ -343,6 +346,15 @@ void CircuitReader::constructCircuit(char* arithFilepath) {
 		variableMap[wire] = currentVariableIdx;
 		currentVariableIdx++;
 	}
+	for (auto &wire : cminputWireIds) {
+		// std::cout<<"cminput :"<<wire<<std::endl;
+		variables.push_back(make_shared<Variable>("cminput"));
+		variableMap[wire] = currentVariableIdx;
+		//std::cout<<"variableMap["<<wire<<"]="<<variableMap[wire]<<std::endl;
+		currentVariableIdx++;
+		inputWireIds.push_back(wire);
+	}
+	
 
 	char type[200];
 	char* inputStr;
@@ -459,7 +471,9 @@ void CircuitReader::mapValuesToProtoboard() {
 			iter != variableMap.end(); ++iter) {
 		Wire wireId = iter->first;
 		pb->val(*variables[variableMap[wireId]]) = wireValues[wireId];
-		//std::cout<<"pb : "<<variableMap[wireId] <<" wire : "<<wireId<<"("<<wireValues[wireId].as_ulong()<<")"<<"\n";
+		// std::cout<<"pb : "<<variableMap[wireId] <<" wire : "<<wireId<<std::endl;
+		// std::cout<<"wire val : ";
+		// wireValues[wireId].as_bigint().print();
 		if (zeropMap.find(wireId) != zeropMap.end()) {
 			LinearCombination l = *zeroPwires[zeropGateIndex++];
 			if (pb->val(l) == 0) {
@@ -1151,7 +1165,7 @@ void CircuitReader::addConvolConstraint(char* inputStr, char* outputStr, unsigne
 			*output_lc += (*variables[currentVariableIdx])*(i+2);
 			//cout<<"+cv["<<currentVariableIdx<<"]";
 			currentVariableIdx++;
-		} else {
+		} else { 
 			*output_lc += (*variables[variableMap[wireTemp]])*(i+2);
 			//cout<<"+v["<<variableMap[wireTemp]<<"]";
 		}

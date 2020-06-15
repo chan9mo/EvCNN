@@ -218,6 +218,12 @@ size_t r1cs_constraint_system<FieldT>::num_inputs() const
 }
 
 template<typename FieldT>
+size_t r1cs_constraint_system<FieldT>::num_cminputs() const
+{
+    return commit_input_size;
+}
+
+template<typename FieldT>
 size_t r1cs_constraint_system<FieldT>::num_variables() const
 {
     return primary_input_size + auxiliary_input_size;

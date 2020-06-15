@@ -250,8 +250,9 @@ Variable::Variable(const string& name) : index_(nextFreeIndex_++), name_(name) {
                                          "Variables is %lu", ULONG_MAX));
 }
 #else
-Variable::Variable(const string& name) : index_(nextFreeIndex_++) {
-    libff::UNUSED(name);
+Variable::Variable(const string& name) : index_(nextFreeIndex_++), name_(name) {
+    //libff::UNUSED(name);
+    //name_(name)
     GADGETLIB_ASSERT(nextFreeIndex_ > 0, GADGETLIB2_FMT("Variable index overflow has occured, maximum number of "
                                          "Variables is %lu", ULONG_MAX));
 }
@@ -260,11 +261,11 @@ Variable::Variable(const string& name) : index_(nextFreeIndex_++) {
 Variable::~Variable() {};
 
 string Variable::name() const {
-#    ifdef DEBUG
+//#    ifdef DEBUG
         return name_;
-#    else
-        return "";
-#    endif
+//#    else
+//        return "";
+//#    endif
 }
 
 FElem Variable::eval(const VariableAssignment& assignment) const {
