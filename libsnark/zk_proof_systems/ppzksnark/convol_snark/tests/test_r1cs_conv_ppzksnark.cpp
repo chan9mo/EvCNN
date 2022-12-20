@@ -28,11 +28,13 @@ void test_r1cs_gg_ppzksnark(size_t kernel_h, size_t input_h)//size_t kernel_w, s
 
     std::vector<libff::Fr<ppT>> a;
     for(size_t i=0;i<kernel_h;i++){
-        a.push_back(libff::Fr<ppT>(i+1));
+        // a.push_back(libff::Fr<ppT>(i+1));
+        a.push_back(libff::Fr<ppT>::random_element());
     }
     std::vector<libff::Fr<ppT>> x;
     for(size_t i=0;i<input_h;i++){
-        x.push_back(libff::Fr<ppT>(i+1));
+        // x.push_back(libff::Fr<ppT>(i+1));
+        x.push_back(libff::Fr<ppT>::random_element());
     }
 
     const bool test_serialization = true;
@@ -56,3 +58,4 @@ int main(int argc, char* argv[])
     test_r1cs_gg_ppzksnark<default_r1cs_gg_ppzksnark_pp>(std::stoi(argv[1]), std::stoi(argv[2]));//, std::stoi(argv[3]), std::stoi(argv[4]));
     //test_r1cs_gg_ppzksnark<default_r1cs_gg_ppzksnark_pp>(4, 2);
 }
+

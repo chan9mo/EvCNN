@@ -1,8 +1,8 @@
 #include "Util.hpp"
 
-void readIds(char* str, std::vector<string>& vec){
+void readIds(char* str, std::vector<unsigned int>& vec){
 	istringstream iss_i(str, istringstream::in);
-	char id[80];
+	unsigned int id;
 	while (iss_i >> id) {
 		vec.push_back(id);
 	}

@@ -54,7 +54,7 @@ namespace libsnark {
 				FieldT x = FieldT::zero();
 				FieldT s = FieldT(i+1);
 				FieldT t = FieldT(i+1);
-				linear_combination<FieldT> A, B, C;
+				linear_combination<FieldT> A, B, C; //prolly this stands for Convolution Polynomials: A(x), B(x), C(x)
 
 				// (a00 * s^0*t^0 + a01 * s^0*t^1 + a11 * s^1*t^1 + ... )(x00 * s^0*t^0 + x01*s^0*t^1+...)=(y00*s^0*t^0+y01*s^0*t^1+....)
 				//std::cout<<"s : "<<s.as_ulong()<<", t : "<<t.as_ulong()<<std::endl;
@@ -393,49 +393,72 @@ template<typename FieldT>
 			r1cs_constraint_system<FieldT> cs;
 			cs.primary_input_size = num_inputs + num_kernels;
 			cs.auxiliary_input_size = num_inputs + num_kernels - 1;//num_constraints; /* we will add one auxiliary variable per constraint */
-			cs.num_convol = 0;
+			cs.num_convol = 1; //Layer = Kernel Depth
 			//cs.num_convol_outputs = 0;//num_inputs + num_kernels - 1;
+			// size_t depth = 3;
+			size_t depth_num_kernels = num_kernels * cs.num_convol;
 
 
 			r1cs_variable_assignment<FieldT> full_variable_assignment;
 
 			
-			std::cout<<"kernels :";
-			for(size_t i=0; i< num_kernels;i++){
+			std::cout << "Inputs : " << num_inputs << std::endl;
+			for (size_t i = 0; i < num_inputs; ++i)
+			{
+				full_variable_assignment.push_back(inputs[i]);
+				// std::cout<<inputs[i].as_ulong()<<"\t";
+			}
+			
+			std::cout << "Kernels : " << num_kernels << std::endl;
+			
+			for(size_t i=0; i< depth_num_kernels; i++){
 				full_variable_assignment.push_back(kernels[i]);
 				//std::cout<<kernels[i].as_ulong()<<"\t";
 			}
 
-			std::cout<<"\ninputs :";
-			for (size_t i = 0; i < num_inputs; ++i)
-			{
-				full_variable_assignment.push_back(inputs[i]);
-				//std::cout<<inputs[i].as_ulong()<<"\t";
-			}
-
-
-			std::cout<<"\noutputs :";
-			for(size_t i=0; i<num_inputs + num_kernels-1;i++){
-				FieldT y= FieldT::zero();
-				for(size_t k=0; k<num_inputs;k++){
-					for(size_t l=0;l<num_kernels;l++){
-						if((k+l) == i)
-						{
-							//std::cout<<"["<<k<<"]["<<l<<"]("<<(inputs[k]*kernels[l]).as_ulong()<<")";
-							y += inputs[k] * kernels[l];
+			std::cout << "Convolution Outputs..." << std::endl;
+			
+			for(size_t count = 0; count < cs.num_convol; count++) {
+				for(size_t i=0; i<num_inputs + num_kernels-1;i++){
+					FieldT y= FieldT::zero();
+					for(size_t k=0; k<num_inputs;k++){
+						for(size_t l=0;l<num_kernels;l++){
+							if((k+l) == i)
+							{
+								// std::cout<<"["<<k<<"]["<<l<<"]("<<(inputs[k]*kernels[l]).as_ulong()<<")";
+								y += inputs[k] * kernels[(count * num_kernels)+l];
+								// std::cout<<"Test: Right Place? "<<k<<" / "<<(count * num_kernels)+l<<std::endl;
+							}
 						}
 					}
+					// std::cout<<y.as_ulong()<<"\t";
+					full_variable_assignment.push_back(y);
 				}
-				//std::cout<<y.as_ulong()<<"\t";
-				full_variable_assignment.push_back(y);
 			}
+
+			// for(size_t i=0; i<num_inputs + depth_num_kernels-1;i++){
+			// 		FieldT y= FieldT::zero();
+			// 		for(size_t k=0; k<num_inputs;k++){
+			// 			for(size_t l=0;l<depth_num_kernels;l++){
+			// 				if((k+l) == i)
+			// 				{
+			// 					// std::cout<<"["<<k<<"]["<<l<<"]("<<(inputs[k]*kernels[l]).as_ulong()<<")";
+			// 					y += inputs[k] * kernels[l];
+			// 					std::cout<<"Test2: Right Place? "<<k<<" / "<<l<<std::endl;
+			// 				}
+			// 			}
+			// 		}
+			// 		// std::cout<<y.as_ulong()<<"\t";
+			// 		full_variable_assignment.push_back(y);
+			// 	}
+			
 			//std::cout<<"\n";
 			
-			cs.add_convol_constraint(num_inputs, num_kernels); //num_inputs + num_kernels - 1);
-			std::cout<<"convol size = "<<cs.num_convol<<"\nconvol output size = "<<cs.convol_outputs_size[0]<<std::endl;
+			cs.add_convol_constraint(num_inputs, depth_num_kernels); //num_inputs + num_kernels - 1);
+			std::cout<<"Convolution Depth (+1): "<<cs.num_convol<<"\nOutput size: "<<cs.convol_outputs_size[0]<<std::endl;
 			/* split variable assignment */
-			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + num_kernels);
-			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + num_kernels, full_variable_assignment.end());
+			r1cs_primary_input<FieldT> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + num_inputs + depth_num_kernels);
+			r1cs_primary_input<FieldT> auxiliary_input(full_variable_assignment.begin() + num_inputs + depth_num_kernels, full_variable_assignment.end());
 
 			/* sanity checks */
 			assert(cs.num_variables() == full_variable_assignment.size());

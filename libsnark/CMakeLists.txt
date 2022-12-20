@@ -263,6 +263,18 @@ target_link_libraries(
 )
 
 add_executable(
+  zk_proof_systems_convol_snark_vcnn
+  EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/profiling/profile_r1cs_vcnn_ppzksnark.cpp
+)
+target_link_libraries(
+  zk_proof_systems_convol_snark_vcnn
+
+  snark
+)
+
+add_executable(
   profile_r1cs_sp_ppzkpcd
   EXCLUDE_FROM_ALL
 
@@ -343,6 +355,32 @@ add_executable(
 )
 target_link_libraries(
   profile_ram_zksnark
+
+  snark
+  ${Boost_LIBRARIES}
+)
+
+add_executable(
+  profile_convol_snark
+  # EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/profiling/profile_r1cs_conv_ppzksnark.cpp
+)
+target_link_libraries(
+  profile_convol_snark
+
+  snark
+  ${Boost_LIBRARIES}
+)
+
+add_executable(
+  profile_convol_snark_vcnn
+  # EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/profiling/profile_r1cs_vcnn_ppzksnark.cpp
+)
+target_link_libraries(
+  profile_convol_snark_vcnn
 
   snark
   ${Boost_LIBRARIES}
@@ -594,12 +632,24 @@ target_link_libraries(
 
 add_executable(
   zk_proof_systems_convol_snark_test
-  EXCLUDE_FROM_ALL
+  # EXCLUDE_FROM_ALL
 
   zk_proof_systems/ppzksnark/convol_snark/tests/test_r1cs_conv_ppzksnark.cpp
 )
 target_link_libraries(
   zk_proof_systems_convol_snark_test
+
+  snark
+)
+
+add_executable(
+  new_commit_vcnn
+  # EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/convol_snark/tests/test_r1cs_vcnn_ppzksnark.cpp
+)
+target_link_libraries(
+  new_commit_vcnn
 
   snark
 )
@@ -852,6 +902,14 @@ add_test(
   NAME zk_proof_systems_convol_snark_test
   COMMAND zk_proof_systems_convol_snark_test
 )
+add_test(
+  NAME zk_proof_systems_convol_snark_vcnn
+  COMMAND zk_proof_systems_convol_snark_vcnn
+)
+add_test(
+  NAME new_commit_vcnn
+  COMMAND new_commit_vcnn
+)
 
 add_dependencies(check common_routing_algorithms_test)
 add_dependencies(check gadgetlib1_simple_test)
@@ -877,6 +935,7 @@ add_dependencies(check test_merkle_tree_gadgets)
 add_dependencies(check test_set_commitment_gadget)
 add_dependencies(check test_sha256_gadget)
 add_dependencies(check zk_proof_systems_convol_snark)
+add_dependencies(check zk_proof_systems_convol_snark_vcnn)
 
 # TODO (howardwu) Resolve runtime on targets
 # gadgetlib1_fooram_test, zk_proof_systems_r1cs_mp_ppzkpcd_test, zk_proof_systems_r1cs_sp_ppzkpcd_test, zk_proof_systems_ram_zksnark_test

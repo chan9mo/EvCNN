@@ -415,8 +415,8 @@ r1cs_conv_ppzksnark_proof<ppT> r1cs_conv_ppzksnark_prover(const r1cs_conv_ppzksn
     libff::leave_block("Compute the polynomial H");
 
 #ifdef DEBUG
-    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
-    qap_instance_evaluation<libff::Fr<ppT> > qap_inst = r1cs_to_qap_instance_map_with_evaluation(pk.constraint_system, t);
+    const libff::Fr<ppT> t_2 = libff::Fr<ppT>::random_element();
+    qap_instance_evaluation<libff::Fr<ppT> > qap_inst = r1cs_to_qap_instance_map_with_evaluation(pk.constraint_system, t_2);
     assert(qap_inst.is_satisfied(qap_wit));
 #endif
 
@@ -536,8 +536,8 @@ r1cs_conv_ppzksnark_proof<ppT> r1cs_conv_ppzksnark_prover2(const r1cs_conv_ppzks
     libff::leave_block("Compute the polynomial H");
 
 #ifdef DEBUG
-    const libff::Fr<ppT> t = libff::Fr<ppT>::random_element();
-    qap_instance_evaluation<libff::Fr<ppT> > qap_inst = r1cs_to_qap_instance_map_with_evaluation(pk.constraint_system, t);
+    const libff::Fr<ppT> t_2 = libff::Fr<ppT>::random_element();
+    qap_instance_evaluation<libff::Fr<ppT> > qap_inst = r1cs_to_qap_instance_map_with_evaluation(pk.constraint_system, t_2);
     assert(qap_inst.is_satisfied(qap_wit));
 #endif
 

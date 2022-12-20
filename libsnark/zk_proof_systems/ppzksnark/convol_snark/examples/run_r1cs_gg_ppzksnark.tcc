@@ -84,17 +84,18 @@ bool run_r1cs_gg_ppzksnark(const r1cs_example<libff::Fr<ppT> > &example,
         libff::leave_block("Test serialization of keys");
     }
 
+    size_t len = example.constraint_system.num_convol_outputs(0);
     const accumulation_vector<libff::G1<ppT> > cx = pvk.gamma_ABC_g1.template accumulate_chunk<libff::Fr<ppT> >(example.primary_input.begin(), example.primary_input.end(), 0);
 
     libff::print_header("LEGO Keygen");
     libff::enter_block("Call to LEGO_Keygen");
-    r1cs_legosnark_keypair<ppT> legokey(r1cs_legosnark_generator<ppT>(pvk.gamma_ABC_g1, pvk.gamma_ABC_g1));
+    r1cs_legosnark_keypair<ppT> legokey = r1cs_legosnark_generator<ppT>(pvk.gamma_ABC_g1, pvk.gamma_ABC_g1, len, len);
     libff::leave_block("Call to LEGO_Keygen");
 	printf("\n");
 
     libff::print_header("LEGO Prover");
     libff::enter_block("Call to LEGO_prover");
-    r1cs_legosnark_proof<ppT> lego_proof = r1cs_legosnark_prover<ppT>(legokey.pk, example.primary_input);
+    r1cs_legosnark_proof<ppT> lego_proof = r1cs_legosnark_prover<ppT>(legokey.pk, example.primary_input, len);
     libff::leave_block("Call to LEGO_prover");
 
     libff::print_header("LEGO Verifier");

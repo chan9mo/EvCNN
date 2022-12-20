@@ -23,14 +23,18 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+
+
+#ifndef NO_PROCPS
 #include <proc/readproc.h>
+#endif
+
 
 using namespace libsnark;
 using namespace gadgetlib2;
 using namespace std;
 
-//typedef unsigned int Wire;
-typedef string Wire;
+typedef unsigned int Wire;
 
 typedef libff::Fr<libff::default_ec_pp> FieldT;
 typedef ::std::shared_ptr<LinearCombination> LinearCombinationPtr;
@@ -45,16 +49,13 @@ typedef ::std::map<Wire, unsigned int> WireMap;
 #define XOR_OPCODE 7
 #define OR_OPCODE 8
 #define CONSTRAINT_OPCODE 9
-#define CONVOL_OPCODE 10
-#define CONVOL2D_OPCODE 11
 
 class CircuitReader {
 public:
 	CircuitReader(char* arithFilepath, char* inputsFilepath, ProtoboardPtr pb);
 
-	int getNumInputs() { return inputWireIds.size();}
-	int getNumOutputs() { return outputWireIds.size();}
-	int getCmNumInputs() { return cminputWireIds.size();}
+	int getNumInputs() { return numInputs;}
+	int getNumOutputs() { return numOutputs;}
 	std::vector<Wire> getInputWireIds() const { return inputWireIds; }
 	std::vector<Wire> getOutputWireIds() const { return outputWireIds; }
 
@@ -62,21 +63,23 @@ private:
 	ProtoboardPtr pb;
 
 	std::vector<VariablePtr> variables;
-	std::map<Wire,LinearCombinationPtr> wireLinearCombinations;
+	std::vector<LinearCombinationPtr> wireLinearCombinations;
 	std::vector<LinearCombinationPtr> zeroPwires;
 
 	WireMap variableMap;
 	WireMap zeropMap;
 
-	std::map<Wire,unsigned int> wireUseCounters;
-	std::map<Wire,FieldT> wireValues;
+	std::vector<unsigned int> wireUseCounters;
+	std::vector<FieldT> wireValues;
 
 	std::vector<Wire> toClean;
 
 	std::vector<Wire> inputWireIds;
 	std::vector<Wire> nizkWireIds;
 	std::vector<Wire> outputWireIds;
-	std::vector<Wire> cminputWireIds;
+
+	unsigned int numWires;
+	unsigned int numInputs, numNizkInputs, numOutputs;
 
 	unsigned int currentVariableIdx, currentLinearCombinationIdx;
 
@@ -84,7 +87,7 @@ private:
 	void constructCircuit(char*);  // Second Pass:
 	void mapValuesToProtoboard();
 
-	int find(const Wire&, LinearCombinationPtr&, bool intentionToEdit = false);
+	void find(unsigned int, LinearCombinationPtr&, bool intentionToEdit = false);
 	void clean();
 
 	void addMulConstraint(char*, char*);
@@ -94,17 +97,13 @@ private:
 	void addAssertionConstraint(char*, char*);
 
 	void addSplitConstraint(char*, char*, unsigned short);
-	void addPackConstraint(char*, char*, unsigned short);
+	// void addPackConstraint(char*, char*, unsigned short);
 	void addNonzeroCheckConstraint(char*, char*);
 
 	void handleAddition(char*, char*);
+	void handlePackOperation(char*, char*, unsigned short);
 	void handleMulConst(char*, char*, char*);
 	void handleMulNegConst(char*, char*, char*);
-
-	void addConvol1DConstraint(char*, char* , unsigned short , unsigned short );
-	void addConvol2DConstraint(char*, char* , char*,  unsigned short , unsigned short, unsigned short);
-	void addConvolConstraint(char*, char* , unsigned short , unsigned short );
-
 
 };
 
